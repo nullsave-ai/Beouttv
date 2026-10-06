@@ -80,9 +80,6 @@ android {
         }
     }
 
-    androidResources {
-        localeFilters += listOf("ar", "en")
-    }
     
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17 

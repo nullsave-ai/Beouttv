@@ -1,0 +1,12 @@
+<resources>
+    <style name="Theme.BeoutTv" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">#0A0F1D</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowBackground">#08090B</item>
+    </style>
+
+    <style name="Theme.BeoutTv.Player" parent="Theme.BeoutTv">
+        <item name="android:windowFullscreen">true</item>
+    </style>
+</resources>

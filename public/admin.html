@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeoutTV Cloud Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/11.1.0/jsrsasign-all-min.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #0a0e14;
+            --bg-panel: #101721;
+            --bg-card: #151f2c;
+            --bg-hover: #1c2a3b;
+            --border: #202e3f;
+            --border-light: #2d3f56;
+            --primary: #2f81f7;
+            --primary-hover: #1f6feb;
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+            --badge-bg: #162638;
+            --badge-text: #58a6ff;
+            --success: #238636;
+            --success-bg: #132a1c;
+            --danger: #da3633;
+            --danger-bg: #2d1214;
+            --warning: #d29922;
+            --warning-bg: #2e2305;
+            --radius-sm: 6px;
+            --radius-md: 8px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* Top Header */
+        header {
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: #fff; }
+        .brand-icon { width: 30px; height: 30px; background: var(--primary); color: #fff; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .header-badges { display: flex; align-items: center; gap: 8px; }
+        .status-chip {
+            background: var(--badge-bg);
+            color: var(--badge-text);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-chip.success { background: var(--success-bg); color: #3fb950; border-color: #238636; }
+        .status-chip.locked { background: var(--danger-bg); color: #f85149; border-color: #da3633; }
+
+        /* Main Container */
+        .main-wrapper { max-width: 1280px; margin: 16px auto; padding: 0 16px; width: 100%; flex: 1; }
+
+        /* Top Quick Stats & Shortcuts Bar */
+        .quick-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .stat-card:hover { border-color: var(--border-light); background: var(--bg-hover); }
+        .stat-info { display: flex; flex-direction: column; }
+        .stat-label { font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
+        .stat-value { font-size: 18px; font-weight: 800; color: #fff; margin-top: 2px; }
+        .stat-icon {
+            width: 36px; height: 36px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--primary);
+        }
+
+        /* Navigation Tabs Bar */
+        .tab-bar { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 16px; flex-wrap: wrap; }
+        .tab-item {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-muted);
+            padding: 9px 16px;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s;
+        }
+        .tab-item:hover { color: var(--text-main); }
+        .tab-item.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Tab Panes */
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* Panels */
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-title { font-size: 14px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+        .panel-body { padding: 16px; }
+
+        /* Grid Forms */
+        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+        .form-cell { display: flex; flex-direction: column; gap: 5px; }
+        .form-cell label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+        .input-field {
+            background: var(--bg-body);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 7px 11px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .input-field:focus { border-color: var(--primary); }
+
+        /* Security Headers Accordion */
+        .sec-accordion {
+            margin-top: 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+        }
+        .sec-header {
+            padding: 9px 12px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--badge-text);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sec-body { padding: 12px; border-top: 1px solid var(--border); display: none; }
+        .sec-body.open { display: block; }
+
+        /* Buttons */
+        .btn {
+            background: var(--primary);
+            color: #fff;
+            border: 1px solid var(--primary);
+            padding: 7px 15px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+        .btn:hover { background: var(--primary-hover); }
+        .btn-outline { background: transparent; border-color: var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--bg-hover); }
+        .btn-danger { background: var(--danger); border-color: var(--danger); }
+        .btn-danger:hover { background: #b62324; }
+        .btn-sm { padding: 4px 9px; font-size: 11.5px; }
+
+        /* Compact Data Table */
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 12.5px; }
+        th { background: var(--bg-card); padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text-muted); font-weight: 600; }
+        td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:hover td { background: var(--bg-hover); }
+        .tbl-logo { width: 26px; height: 26px; border-radius: 4px; object-fit: contain; background: var(--bg-card); padding: 2px; }
+        .tbl-tag { background: var(--badge-bg); color: var(--badge-text); padding: 2px 7px; border-radius: 4px; font-size: 11px; }
+        .badge-ad {
+            background: rgba(229, 169, 60, 0.15);
+            color: #E5A93C;
+            border: 1px solid rgba(229, 169, 60, 0.35);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge-broadcast {
+            background: rgba(47, 129, 247, 0.15);
+            color: #58a6ff;
+            border: 1px solid rgba(47, 129, 247, 0.35);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge-urgent {
+            background: rgba(218, 54, 51, 0.15);
+            color: #f85149;
+            border: 1px solid rgba(218, 54, 51, 0.35);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75);
+            z-index: 500;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            width: 90%;
+            max-width: 600px;
+            padding: 16px;
+        }
+        video { width: 100%; border-radius: var(--radius-sm); background: #000; max-height: 300px; }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
+            color: #fff;
+            padding: 9px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 12.5px;
+            font-weight: 600;
+            display: none;
+            z-index: 600;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+
+        /* Authentication Screen Styles */
+        #auth-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 85vh;
+            padding: 20px;
+        }
+        .auth-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 440px;
+            padding: 32px 26px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.65);
+            position: relative;
+            overflow: hidden;
+            text-align: right;
+        }
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #2f81f7, #58a6ff, #238636);
+        }
+        .auth-icon-circle {
+            width: 60px;
+            height: 60px;
+            background: rgba(47, 129, 247, 0.12);
+            border: 1px solid rgba(47, 129, 247, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 14px;
+            font-size: 26px;
+            color: var(--primary);
+        }
+        .auth-shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(3px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .pass-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-top: 6px;
+        }
+        .pass-input-wrapper input {
+            width: 100%;
+            padding: 10px 42px 10px 40px;
+            font-size: 15px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+        }
+        .pass-input-wrapper .input-icon {
+            position: absolute;
+            right: 14px;
+            color: var(--text-muted);
+            font-size: 15px;
+            pointer-events: none;
+        }
+        .pass-input-wrapper .toggle-eye {
+            position: absolute;
+            left: 12px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 15px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .pass-input-wrapper .toggle-eye:hover { color: var(--text-main); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-server"></i></div>
+            <span>BeoutTV Cloud Console</span>
+        </div>
+        <div class="header-badges">
+            <div class="status-chip success">
+                <i class="fa-solid fa-circle" style="font-size: 7px;"></i>
+                <span>Google Firebase CDN • نشط</span>
+            </div>
+            <div id="hdr-auth-badge" class="status-chip locked">
+                <i class="fa-solid fa-lock"></i>
+                <span id="hdr-auth-text">مقفل ومشفر</span>
+            </div>
+            <button id="hdr-logout-btn" class="btn btn-danger btn-sm" style="display: none;" onclick="handleLogout()">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
+            </button>
+        </div>
+    </header>
+
+    <!-- 0. High-Security Login Screen -->
+    <div id="auth-screen">
+        <div class="auth-card" id="auth-card-box">
+            <div style="text-align: center; margin-bottom: 22px;">
+                <div class="auth-icon-circle">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h1 style="font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 4px;">BeoutTV Cloud Console</h1>
+                <p style="font-size: 12.5px; color: var(--text-muted);">بوابة الإدارة السحابية الموحدة • جلسة مشفرة ومحمية</p>
+                <div style="margin-top: 10px;">
+                    <span class="status-chip" style="display: inline-flex; font-size: 11px; padding: 3px 10px;">
+                        <i class="fa-solid fa-lock"></i> تشفير عسكري AES-256-GCM / PBKDF2
+                    </span>
+                </div>
+            </div>
+
+            <form id="auth-form" onsubmit="event.preventDefault(); submitAuthPasscode();">
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 12.5px; font-weight: 600; color: var(--text-muted); display: block;">
+                        رمز الدخول السحابي المعتمد (Access Code / PIN):
+                    </label>
+                    <div class="pass-input-wrapper">
+                        <input type="password" id="auth-passcode-input" class="input-field" placeholder="أدخل رمز المرور أو رقم PIN..." required autofocus autocomplete="current-password">
+                        <span class="input-icon"><i class="fa-solid fa-key"></i></span>
+                        <button type="button" class="toggle-eye" onclick="togglePassVisibility('auth-passcode-input', 'auth-eye-icon')" title="عرض / إخفاء الرمز">
+                            <i id="auth-eye-icon" class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; font-size: 12px;">
+                    <label style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer;">
+                        <input type="checkbox" id="auth-remember-check" checked style="accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer;">
+                        <span>تذكر الجلسة على هذا الجهاز (حفظ مشفر)</span>
+                    </label>
+                </div>
+
+                <div id="auth-error-box" style="display: none; background: var(--danger-bg); border: 1px solid var(--danger); color: #f85149; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 12px; margin-bottom: 16px; text-align: center;">
+                </div>
+
+                <button type="submit" id="btn-auth-submit" class="btn" style="width: 100%; justify-content: center; height: 42px; font-size: 14px; font-weight: 700;">
+                    <i class="fa-solid fa-unlock-keyhole"></i> تأكيد وفك تشفير اللوحة
+                </button>
+            </form>
+
+            <div style="margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--border); text-align: center; font-size: 11px; color: var(--text-muted);">
+                <i class="fa-solid fa-shield-virus"></i> يتم التحقق التشفيري محلياً دون إرسال رمز المرور للخادم
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Protected Console (Hidden Until Authenticated) -->
+    <div id="main-console" style="display: none;" class="main-wrapper">
+        <!-- Top Compact Stats & Shortcuts Bar -->
+        <div class="quick-bar">
+            <div class="stat-card" onclick="setTab('channels')">
+                <div class="stat-info">
+                    <span class="stat-label">القنوات المسجلة</span>
+                    <span class="stat-value" id="stat-channels-count">0</span>
+                </div>
+                <div class="stat-icon"><i class="fa-solid fa-tv"></i></div>
+            </div>
+            <div class="stat-card" onclick="setTab('gateway')">
+                <div class="stat-info">
+                    <span class="stat-label">حالة البوابة والصيانة</span>
+                    <span class="stat-value" id="stat-gateway-status" style="color: #3fb950; font-size: 15px;">طبيعي (Normal)</span>
+                </div>
+                <div class="stat-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            </div>
+            <div class="stat-card" onclick="setTab('notifications')">
+                <div class="stat-info">
+                    <span class="stat-label">مركز الإشعارات</span>
+                    <span class="stat-value" style="font-size: 14px; color: var(--badge-text);">إرسال فوري 🚀</span>
+                </div>
+                <div class="stat-icon"><i class="fa-solid fa-bell"></i></div>
+            </div>
+            <div class="stat-card" onclick="setTab('security')">
+                <div class="stat-info">
+                    <span class="stat-label">حالة الحماية والأمان</span>
+                    <span class="stat-value" style="font-size: 14px; color: #3fb950;"><i class="fa-solid fa-lock"></i> مشفرة وآمنة</span>
+                </div>
+                <div class="stat-icon" style="color: #3fb950;"><i class="fa-solid fa-user-shield"></i></div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tab-bar">
+            <button class="tab-item active" id="tab-btn-channels" onclick="setTab('channels')"><i class="fa-solid fa-tv"></i> إدارة القنوات والبث</button>
+            <button class="tab-item" id="tab-btn-gateway" onclick="setTab('gateway')"><i class="fa-solid fa-sliders"></i> بوابة التطبيق والصيانة</button>
+            <button class="tab-item" id="tab-btn-notifications" onclick="setTab('notifications')"><i class="fa-solid fa-bell"></i> مركز الإشعارات الفورية</button>
+            <button class="tab-item" id="tab-btn-security" onclick="setTab('security')"><i class="fa-solid fa-shield-halved"></i> الأمان ورمز الدخول</button>
+        </div>
+
+        <!-- 1. Channels Management Tab -->
+        <div id="pane-channels" class="tab-pane active">
+            <!-- Add / Edit Channel Form -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title" id="ch-form-title"><i class="fa-solid fa-plus"></i> إضافة قناة بث مباشر</span>
+                    <button class="btn btn-outline btn-sm" id="btn-cancel-edit" style="display: none;" onclick="cancelEditChannel()">إلغاء التعديل</button>
+                </div>
+                <div class="panel-body">
+                    <input type="hidden" id="edit-ch-index" value="-1">
+                    <div class="grid-form">
+                        <div class="form-cell">
+                            <label>اسم القناة:</label>
+                            <input type="text" id="ch-name" class="input-field" placeholder="مثال: beIN Sports 1 HD">
+                        </div>
+                        <div class="form-cell">
+                            <label>التصنيف (Category):</label>
+                            <input type="text" id="ch-cat" class="input-field" placeholder="مثال: beIN Sports أو SSC">
+                        </div>
+                        <div class="form-cell" style="grid-column: 1 / -1;">
+                            <label>رابط البث المباشر (HLS / m3u8 / mpd):</label>
+                            <input type="text" id="ch-url" class="input-field" placeholder="https://stream.domain.com/live/ch1.m3u8">
+                        </div>
+                        <div class="form-cell" style="grid-column: 1 / -1;">
+                            <label>رابط الشعار (Logo URL):</label>
+                            <input type="text" id="ch-logo" class="input-field" placeholder="https://imagecache.365scores.com/.../572">
+                        </div>
+                    </div>
+
+                    <!-- Optional Security Headers & DRM Accordion -->
+                    <div class="sec-accordion">
+                        <div class="sec-header" onclick="toggleAccordion('ch-sec-body')">
+                            <span><i class="fa-solid fa-lock" style="margin-left: 6px;"></i> رؤوس الحماية و DRM (User-Agent, Referer, Cookie, ClearKey) - اختياري</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div id="ch-sec-body" class="sec-body">
+                            <div class="grid-form">
+                                <div class="form-cell">
+                                    <label>User-Agent:</label>
+                                    <input type="text" id="ch-ua" class="input-field" placeholder="Mozilla/5.0... أو معرّف تطبيقك">
+                                </div>
+                                <div class="form-cell">
+                                    <label>Referer:</label>
+                                    <input type="text" id="ch-ref" class="input-field" placeholder="https://domain.com/">
+                                </div>
+                                <div class="form-cell">
+                                    <label>Origin:</label>
+                                    <input type="text" id="ch-origin" class="input-field" placeholder="https://domain.com">
+                                </div>
+                                <div class="form-cell">
+                                    <label>Cookie:</label>
+                                    <input type="text" id="ch-cookie" class="input-field" placeholder="token=xyz; session=123">
+                                </div>
+                                <div class="form-cell">
+                                    <label>Clearkey Key ID (DRM):</label>
+                                    <input type="text" id="ch-drm-keyid" class="input-field" placeholder="معرف المفتاح Key ID">
+                                </div>
+                                <div class="form-cell">
+                                    <label>Clearkey Key (DRM):</label>
+                                    <input type="text" id="ch-drm-key" class="input-field" placeholder="مفتاح التشفير Key">
+                                </div>
+                                <div class="form-cell" style="grid-column: 1 / -1;">
+                                    <label>Widevine License URL:</label>
+                                    <input type="text" id="ch-drm-lic" class="input-field" placeholder="https://license.domain.com/widevine">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 14px; display: flex; gap: 8px;">
+                        <button class="btn" id="btn-save-channel" onclick="handleChannelSubmit()"><i class="fa-solid fa-plus"></i> حفظ القناة</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Channels Table -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title"><i class="fa-solid fa-list"></i> قائمة القنوات المسجلة</span>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-sm btn-outline" onclick="syncChannelsToCloud(true)"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ ومزامنة السحابة فوراً</button>
+                        <button class="btn btn-sm" onclick="exportChannels()"><i class="fa-solid fa-download"></i> تصدير channels.json</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 44px;">الشعار</th>
+                                <th>اسم القناة</th>
+                                <th>التصنيف</th>
+                                <th>الحماية / Headers</th>
+                                <th>رابط البث</th>
+                                <th style="width: 130px; text-align: center;">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbl-channels-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Gateway & Maintenance Tab -->
+        <div id="pane-gateway" class="tab-pane">
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title"><i class="fa-solid fa-shield-halved"></i> إعدادات بوابة التطبيق والصيانة</span>
+                </div>
+                <div class="panel-body">
+                    <div class="grid-form">
+                        <div class="form-cell">
+                            <label>حالة التطبيق العامة (Gateway Mode):</label>
+                            <select id="gw-status" class="input-field">
+                                <option value="NORMAL">يعمل بشكل طبيعي (Normal)</option>
+                                <option value="MAINTENANCE">وضع الصيانة والتطوير (Maintenance)</option>
+                                <option value="UPDATE_REQUIRED">إشعار تحديث إجباري للكل (Force Update All)</option>
+                                <option value="SUSPENDED">إيقاف الخدمة مؤقتاً (Suspended)</option>
+                            </select>
+                        </div>
+                        <div class="form-cell">
+                            <label>الحد الأدنى لرقم الإصدار المطلوب (Min Version Name):</label>
+                            <input type="text" id="gw-min-version-name" class="input-field" value="1.0" placeholder="مثال: 1.1">
+                            <small style="color: #8b949e; font-size: 11px; display: block; margin-top: 4px;">إذا كان إصدار تطبيق المستخدم أقل من هذا الرقم (مثلاً 1.0)، سيتم قفل النسخة السابقة تلقائياً ومطالبته بالتحديث.</small>
+                        </div>
+                        <div class="form-cell">
+                            <label>الحد الأدنى لكود الإصدار (Min Version Code):</label>
+                            <input type="number" id="gw-min-version-code" class="input-field" value="1" placeholder="مثال: 2">
+                            <small style="color: #8b949e; font-size: 11px; display: block; margin-top: 4px;">رقم الكود البرمجي (versionCode) للنسخة المطلوبة لتجاوز القفل.</small>
+                        </div>
+                        <div class="form-cell">
+                            <label>رسالة الصيانة / التنبيه:</label>
+                            <input type="text" id="gw-msg" class="input-field" value="التطبيق قيد الصيانة والتطوير، سنعود للعمل قريباً.">
+                        </div>
+                        <div class="form-cell" style="grid-column: 1 / -1;">
+                            <label>نص رسالة التحديث للمستخدم (Update Message):</label>
+                            <input type="text" id="gw-update-msg" class="input-field" value="يتوفر إصدار جديد من تطبيق Beout TV. يرجى التحديث لمتابعة المشاهدة.">
+                        </div>
+                        <div class="form-cell" style="grid-column: 1 / -1;">
+                            <label>رابط قناة التحديث أو ملف APK (Telegram / Download URL):</label>
+                            <input type="text" id="gw-update-url" class="input-field" value="https://t.me/beouttvapp" placeholder="https://t.me/beouttvapp">
+                            <div style="margin-top: 6px; display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-secondary" style="font-size: 11px; padding: 4px 10px; cursor: pointer;" onclick="document.getElementById('gw-update-url').value='https://t.me/beouttvapp'"><i class="fa-brands fa-telegram"></i> قناة @beouttvapp الرسمية</button>
+                                <button type="button" class="btn btn-secondary" style="font-size: 11px; padding: 4px 10px; cursor: pointer;" onclick="document.getElementById('gw-update-url').value='https://t.me/oneplusnet'"><i class="fa-brands fa-telegram"></i> قناة @oneplusnet البديلة</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 14px;">
+                        <button class="btn" onclick="saveGateway()"><i class="fa-solid fa-floppy-disk"></i> حفظ إعدادات البوابة والتحديثات في Firebase</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Push Notifications Tab -->
+        <div id="pane-notifications" class="tab-pane">
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title"><i class="fa-solid fa-paper-plane"></i> إرسال إشعار فوري لجميع مستخدمي التطبيق (Firebase Push)</span>
+                </div>
+                <div class="panel-body">
+                    <div class="grid-form">
+                        <div class="form-cell">
+                            <label>نوع الإشعار (Notification Type):</label>
+                            <select id="notif-type" class="input-field" onchange="onNotifTypeChanged()">
+                                <option value="BROADCAST">بث مباشر / إشعار عام (Standard Broadcast)</option>
+                                <option value="AD">إعلان ترويجي / عرض تجاري (Sponsored Ad Card)</option>
+                                <option value="URGENT">تنبيه عاجل وهام (Urgent System Notice)</option>
+                                <option value="MATCH">تنبيه موعد مباراة (Match Reminder)</option>
+                            </select>
+                        </div>
+                        <div class="form-cell">
+                            <label>خيارات الإعلان والتمييز:</label>
+                            <div style="display: flex; align-items: center; gap: 8px; height: 38px;">
+                                <input type="checkbox" id="notif-is-ad" style="width: 17px; height: 17px; accent-color: #E5A93C; cursor: pointer;">
+                                <label for="notif-is-ad" style="cursor: pointer; color: #E5A93C; font-weight: 700; font-size: 12.5px;">
+                                    <i class="fa-solid fa-rectangle-ad"></i> إعلان ممول ببطاقة فاخرة (Sponsored Card)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-cell" style="grid-column: 1 / -1;">
+                            <label>عنوان الإشعار (Title):</label>
+                            <input type="text" id="notif-title" class="input-field" placeholder="مثال: خصم حصري 50% على باقة VIP أو انطلاق قمة ريال مدريد!">
+                        </div>
+                        <div class="form-cell" style="grid-column: 1 / -1;">
+                            <label>نص الإشعار والرسالة (Body Message):</label>
+                            <textarea id="notif-msg" class="input-field" rows="3" placeholder="اكتب تفاصيل الإعلان أو التنبيه هنا..."></textarea>
+                        </div>
+                        <div class="form-cell">
+                            <label>رابط الإجراء أو الإعلان - اختياري (Action URL):</label>
+                            <input type="url" id="notif-action-url" class="input-field" placeholder="https://example.com/offer أو beouttv://...">
+                        </div>
+                        <div class="form-cell">
+                            <label>نص زر الإجراء - اختياري (Button Title):</label>
+                            <input type="text" id="notif-action-title" class="input-field" placeholder="مثال: عرض الإعلان / فتح الرابط / مشاهدة الآن">
+                        </div>
+                        <div class="form-cell" style="grid-column: 1 / -1;">
+                            <label>رابط صورة البانر أو الإعلان - اختياري (Banner Image URL):</label>
+                            <input type="url" id="notif-image-url" class="input-field" placeholder="https://example.com/banner.jpg">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 14px; display: flex; gap: 8px;">
+                        <button class="btn" onclick="sendBroadcastNotification()"><i class="fa-solid fa-paper-plane"></i> إرسال الإشعار لجميع الأجهزة الآن</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Broadcast Card with Clear Button -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title"><i class="fa-solid fa-tower-broadcast"></i> البث النشط الحالي على التطبيق (Active Broadcast)</span>
+                    <button class="btn btn-outline btn-sm btn-danger" onclick="clearActiveBroadcast()"><i class="fa-solid fa-trash-can"></i> إلغاء ومسح البث النشط</button>
+                </div>
+                <div class="panel-body" id="latest-notif-box" style="color: var(--text-muted); font-size: 13px;">
+                    جاري التحميل...
+                </div>
+            </div>
+
+            <!-- Notification History Panel with Delete & Clear All -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title"><i class="fa-solid fa-clock-rotate-left"></i> سجل الإشعارات المحفوظة في قاعدة البيانات (<span id="notif-history-count">0</span>)</span>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline btn-sm" onclick="loadNotificationHistory()"><i class="fa-solid fa-rotate"></i> تحديث السجل</button>
+                        <button class="btn btn-outline btn-sm btn-danger" onclick="clearAllNotificationsHistory()"><i class="fa-solid fa-trash-arrow-up"></i> مسح كامل السجل</button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 12%;">النوع</th>
+                                    <th style="width: 22%;">العنوان</th>
+                                    <th style="width: 28%;">الرسالة</th>
+                                    <th style="width: 16%;">الإجراء / الرابط</th>
+                                    <th style="width: 12%;">تاريخ الإرسال</th>
+                                    <th style="width: 10%; text-align: center;">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-notifications-history-body">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 18px;">جاري تحميل سجل الإشعارات...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Security & Access Control Tab -->
+        <div id="pane-security" class="tab-pane">
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title"><i class="fa-solid fa-shield-halved"></i> إدارة الأمان ورمز الدخول السحابي</span>
+                    <button class="btn btn-danger btn-sm" onclick="handleLogout()"><i class="fa-solid fa-lock"></i> قفل اللوحة الآن</button>
+                </div>
+                <div class="panel-body">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px;">
+                            <div style="font-size: 11.5px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">حالة التشفير النشطة</div>
+                            <div style="font-size: 14px; font-weight: 700; color: #3fb950; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-circle-check"></i> AES-256-GCM + PBKDF2 (100k)
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+                                المفتاح الخاص مشفر سحابياً ولا يمكن الوصول إليه دون فك التشفير برمز المرور.
+                            </div>
+                        </div>
+
+                        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px;">
+                            <div style="font-size: 11.5px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">الجلسة الحالية</div>
+                            <div style="font-size: 14px; font-weight: 700; color: #58a6ff;" id="sec-session-time">
+                                جلسة نشطة
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+                                سيتم قفل اللوحة تلقائياً بعد 30 دقيقة من الخمول للحفاظ على الأمان.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Change Passcode Tool -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 16px;">
+                        <h3 style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-key"></i> تغيير رمز الدخول السحابي المعتمد
+                        </h3>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+                            يمكنك تعيين كلمة مرور قوية جديدة أو رمز PIN مكون من 6 أرقام. سيتم إعادة تشفير الخزنة السحابية فوراً.
+                        </p>
+
+                        <div class="grid-form" style="max-width: 600px;">
+                            <div class="form-cell">
+                                <label>رمز الدخول الجديد (كلمة مرور أو PIN):</label>
+                                <input type="password" id="new-pass-input" class="input-field" placeholder="أدخل الرمز الجديد...">
+                            </div>
+                            <div class="form-cell">
+                                <label>تأكيد الرمز الجديد:</label>
+                                <input type="password" id="confirm-pass-input" class="input-field" placeholder="أعد إدخال الرمز للتأكيد...">
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 14px; display: flex; gap: 8px;">
+                            <button class="btn" onclick="updateAdminPasscode()"><i class="fa-solid fa-shield-cat"></i> تحديث رمز الدخول</button>
+                        </div>
+                    </div>
+
+                    <!-- Applied Protections List -->
+                    <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; background: var(--bg-panel);">
+                        <div style="font-size: 12.5px; font-weight: 700; color: #fff; margin-bottom: 8px;">
+                            <i class="fa-solid fa-list-check"></i> معايير الحماية النشطة على لوحة BeoutTV:
+                        </div>
+                        <ul style="font-size: 12px; color: var(--text-muted); padding-right: 20px; line-height: 1.8;">
+                            <li><strong>حجب المفتاح الخاص:</strong> مفتاح Google Service Account Private Key مشفر بـ AES-256-GCM ولا يظهر إطلاقاً في السورس كود.</li>
+                            <li><strong>حماية ضد القوة الغاشمة (Brute-force):</strong> قفل مؤقت للوحة بعد 5 محاولات خاطئة لمنع التخمين الآلي.</li>
+                            <li><strong>قفل خمول تلقائي:</strong> إغلاق الجلسة ومسح المفاتيح من ذاكرة المتصفح تلقائياً عند عدم النشاط.</li>
+                            <li><strong>عزل واجهات التحكم:</strong> لا يتم تحميل أو عرض أي قنوات أو بيانات بوابة أو إشعارات إلا بعد فك التشفير بنجاح.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stream Preview Modal -->
+    <div id="modal-player" class="modal-overlay" onclick="closePlayerModal()">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span id="modal-title" style="font-size: 13.5px; font-weight: 700;">معاينة البث المباشر</span>
+                <button onclick="closePlayerModal()" style="background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer;">&times;</button>
+            </div>
+            <video id="player-video" controls autoplay></video>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        // --- High-Security Encrypted Vaults Container ---
+        const VAULTS_DATA = {
+        "iterations": 100000,
+        "vaults": [
+                {
+                        "id": "master_pass",
+                        "type": "password",
+                        "salt": "5a654da62994cac1bfc1740796109507",
+                        "iv": "db7751ca174af0efbfc31265",
+                        "data": "aeb28ab0833c1d5ef7e5aa216c558cca76ab3c11b25c8374f5d787a6be904fdec0bb564fbffc357b7b490dbf16a4a77bfad9728122fcb9a16b774704bda06c224e3581af256e1510d5b7bb691667eabffb23be6e2a3334fe1baf1dbd2df42fd43ba4c8b1ad9710d491cf117509b0b0a856c058837fdab431c0cfdcdc45f5e8eaa73c309a432d932697f222c0452ee51692f1cf25689098239c2429c6e91827439fbd285adf0076775675bdaa8fc511649935171e49f99f04dfb4121cd928c2070085b402079b06ae3832a39b6ae9f4c16dd6189df67d6f96746abb5d1f34c63ccc9f12055c4fa4bb60281969e7bc9bd9c39a97f2f9923e29074e80f44c5b721f498a79a8398b7f5987e533c3ca3358808d039d3a2968a9e808e4d419f9311ce4d5c393b4a4ff1ccfa9625a64566ec20228a4f57cc0668fe81d5255fafe06191a7a0d5cf5f129f2fbb2a72bba8b216fee87086ad235b7830656fddbc993d694ac76228c5ed87ba635df1f33454586b50d0c94ad3d0e647b48766f23874e60f18732c709d181484a8ff9646bb13370968103e94a57f02ad42c4db4eb4f687eedb828be04934fe2cce71c777c4ec503a451a1d0b7874136725159cf869296b6c036349c3df7a08db4591173bd8e4d834e25eb9ae9fa1ae164d9787c8b27b9b652771090a99fb7e15ad1c67445f92ec863ccf93e5ecc6ffe756cb9d4929232677fa24fe84dffb466631b5726bad03e51ad1a90db1cfe451b97b021c9ed61c260cf69933f3d58a32ef84a7b476721cae3a9237cf7bde7a71b660b73a6ba8f5806f19aa257f80e23c2e983dc31a414a38855828098681d69ef3092241b37c204d051074dd418d88355cde716aeb3bdb665556745d5d270f9dca89f2a95cc34f88ebbc96e85028edd8dceaf325c124d1810d9d30c8b79c1d5b98eb26ee19de18715214f1ba4972800a929321bf5fd400a70726ac6a0eaf7144e3c64b69e67170aa22588726090284f43ecec12d525192c2a878dfa3f294da260fd3da3edae91cd530ec4fa91606a59429d44db837a228faafc67c59ae3f5fc7fdc2b46bac975518a456775d5a335dd79ecf9f300c2a45c671e303a67f322aa5c8a7b81a16bce3bb737c93dafd802c4324f18eb674c6452a5aacf28cd4998bcf28aee633eb9e9fe20a7d03cf89eb439173149698206eb33117a602af67a0d01b553b89a525190c4973f3c1c5bdaeeae631a7450858246680a4385778db0ec893bb1aeea11e42c3064227fd4d94aae8e2f0204792741d890b253b8e5a2c627c27f1ae1502f25c97a37d8f40ee56ff39030d869da1f8802009ef5ce290c01d8f368a404a701ef4c858b01ff06506bb7e30937b2830aec5bbb8e4b09e03fa57d3f71eb9ce31142e777ce8d52d9f316b5fbb9e328c17362a6edb5863da01eff82e806d7823a28ac7fa0956bf9fa5f837b77aaae2e93df288008b2237a78cd657223accee0d702f63e8e018c239a19ae28fc6b974b132e4c2c87e30ee6ea0997e7f902166f20d7365ba3bdeae52f763bcb5d3dc2597f327182abb09abe9e6268c6b3bee45408124bef8d31f7e0c98fe1444ed2c4ec5b57c82f32b1c4eaa50167e03e4c890cc2e923daea8235b633fa297ab1621b4813e85c827be9cce6313b53fb7f70daadd4d446b9794b98c25143c3bd57aa3db783e6016396d0468b60a488e43e3719f9a04aa9ce2c1402f34e5804ee293d07df1fac4157f24c2f60bac7b5583542abf6068ccdfd8edd7bfe474e9b6a58febc85348a6a58708343511e3b8e6d268d72f9d30bc745d88534d5c6a5111f791133fcef5e4ab6de6205c1ad95977122459af92a65b3a520a8342040921ab814cc707dfceff2e4c70a5d6abe54f2f0b7880eeb9f1ffff6590df645a5718ab1b5ad21e71d01f1a4030d659d7c56cb142fc8068d963ac96be1ba53703c873c73b0163f04c5125d47f26492116d0bc18af7ccb82cdcbd65afe14ad06115000ca0d89ad625a92ea5564c933c312c42e060e699731e3b248a0c1bd300f243f586ec21944b6c0d893dae12ccdff21d6f53a2570091f22e9a03e526c2b6c74b85a20e927ac7960613b9582d86bec5b2d04159b53d60ab640d8965dc07a62db047cb042004d3b2cf42b31e5acb3d62dbe00e9ec7e3126522d9b6086b0eb91afe51dd0355320aebab406bd2197dbea0e97b4a236321ec957770cbc9602252ea650a7862be16e20d5012bc5cebe7422463789f731a608c9a65eac9dda05c6b778e7917658b679ba8bccda0177f8e51f1c0f063e6000286d21c881bb58bde2289f1166bdcbda47cc44738f8d0783acfe21c0e31095a178b7c27c67c98244fcd40066d8ef29e9bbbf8374f3c06b62a900cbffad0106225f6e340f7b99fc74977d192e1bfc3c0ddf101de4fa527c086a2fcaf8509d459f9a83da20a77a589a0297246f40557b628a76beadb309eaa19208339003de23346d948e102c5e2cce1ad566de3421855c6bed5d5464e5cf6b13ebd8b949d16944d6174a6a8e3aa65e0f83c77e3b7ef8ef40c7c00f160fca491a02569f2c29a9cce3e5d3f21b048d26c46eaa24369e1fea30800ee8ace9bfbe5f4ba111770003bd2aba7bf82dbd0433daf41c7e364ee1f7b0664bc4aedcac038cc8f5673be5f7bdb83b6739d721b5d0a849ca22b24910c2919d9755e3e6d0810c4316255a3d1a9d3d1780a60c9250f90b5496ded598a0c"
+                },
+                {
+                        "id": "master_pin",
+                        "type": "pin",
+                        "salt": "4ae7ac392e6715b647123fe61ab79a47",
+                        "iv": "db33b18e5a9f9dcc9e8495c1",
+                        "data": "92f35d7e945f58189f5bac64f694f2bab32bd6e69b9e9b17ea10d9f2b6f600b5fdfe6663b061d32d928c9f1c832ca28f53989a7aef139ce54c5a54e5856ad2ee4b0b2025dc390e4eb8d746fbb3272691f013d6c221bac94adb660119af27b327e531629d1cf4198f4589c332aeb59b61987c784e127e1c34ae1b291cbfd23f4ea7aca4f5cf27868cb0a0aeaa06a1ad4149b9655f63fd7954e79f0d98d837c8c496d8495ab6a4b2c8ece4eea311eebe8d90b91679735d77e713f12b69c5c388da3e0ada621bf0095d267ae8296695c6a8ae2fc1d5c7cb2436a419a9c266bae376eb7385c49c865c845fbd1b7a864f4d9bc22af1f68f5deb470cf364bf80bb1ff24a5c0fc1bd75ac7771f61d2503710ddeeb4d03023149f27d7c4e62270e09d66e53f54a370b1fbbcad26768e0c28bcb8613821a55ebc0614a35a6afa44be866316b6b058ed295a6f075d917ceba350c47c50c8149454f779dd51bc6b8ee744b9911b016c67b8a1bb67b6eb8270f4108ae70b39840f17633dcfe6be479264b77ea3f520c5d8155196249ee6fd75ad14bfa0d73cfd9089ec38faabcbaebeb3407f3e6c537caad7ca03724f9a2746abc96eb97804a5e1f403085e7d71bad66ac6d07bf1b4a8371d85dd72695cdae300eb1c7477b0da21f76e1cc365150a0224fa36e4b19d1acfaa0807cd17c321f63843378090f6cfad9ad4907d9ccf31a81c03ce4384aeffb4321874e3eae6396f4e3117df7e5c1aa0d18cac1e8d307a38ebbf50beab7c6c8bff7342889908f0c0a657cba4c4c3ef860bd19aab551c3eef24566c69c090717ed8a8bd2c638bbf16b857fd76d98b53a86ec35d9ebf38054082ded9829a7cd8b64bf0fd6ad32d5a4a8b256fc8e1b16367dd097815506bd50f86b5acacd623ca06379ab8358712038bbd3afc5ce8a725befbc21e0106f5549ce3484e9f3ae778831e7611291fe9f7227818a0ab97fd715a8d8328f148ba9b4a089e78c46f91c1ca298a825a1e745914445c7326b6c9e072d32611f7826bf034b459c17aa864ef9c09f132103e196f843df8c2d47c89ee0e43867311d4fc69d7956116c0a687fae2f0c5ef19af591f2fc16d4ef4a9d21d88f671f346591f173ab85a93474b6987f0dc8b12db347a24e015fde1961ca3d1c064a1de582a17162145f8eacec42d95ac96e7cdb3558ea506dc6d57b7e5a61e564fc6dff43def745d1349109d68a24f304b67b93b063d81863e651dea9229cbd783ee889235eb815bc2731930e43569aa9b416867d0cf5a6a5607eac46ece295951f3b7d10e379531bdc06b574e16716e78a2b950dfead501bedd40fc33524ad715137fde88af052c8dfc860f232e54ec27aa1af95faf05ffd0fd338b4fcec1f4fe54052aeaa890a166e2c72ddaedfc23dcf48bfefd0ada980bf0183d5bade669be0885ddaaba9b24b75bdfd9fc66a7befa4243e458e31e5fe530543a9ed0de1f63b813d099487cb8c2ac58e3e3b1999b913a8d5103d4c31aadc6ca8c5f31f33bcd914a575686ebce5534df2f85cf3b797e2435c18cdf780743249bbfa812e210f8d47d38c80696b8afacc0fe1422ec0ca42f9183612c6278e439843297096cbf4a2293eda3292a8115da612afb4c25af80798d8b09831a0cd3c901f55f6b6b625b894dd370e76bd74f02a0654d8f326646debe8d7209d5d8577481ded5dc44cf804e88878570da175d6da1ff4fef8b30aae90c164dc2d8621f5c5407228b403e1776de53c2b22fc5bf6f033bc581c759ad27dcc5c7f83d573486bfaa256ae928c292aa73643bc58c5c256c4535e6359bd7ef1a30130d173c36d57354174fcb9c23283eeb9e0f379606a8128b995d6e8d13fd935f4d028b20097bb77162f91e1783527cee64d3d0e6f6786192c1739f4e56d29dd77985b65ab8e431a41f2da537daf924ef2e1f9a283bc58e43e34de48864c577abebd389e313528257aaa9943666f2a178192d58cf36adfe2661628547e7972baff5cf6158b87031c096d972c442444310a592fbb96607bb7b64086257deea4bfa9e8b3e53aed4d546a355fb18e9e6c2009f32edbd0ea692a4fefcf343fa0ecd45bb328f61600adcfb5d608da00d7559d64a96cf1c3d36bb8711d236e35c90d46c4cbf81d61ad88c8dcf895dd0847d77a70c2f5161cb58430b64c9f5639257a2842dd9ab86e57cd771fa8415ebc5e25a77d5d429c169e5be45f25abae08ae36bf99425f1aeec9c5183e8e344df7ba5aa8b0741cd99f16f3a82a95976309a8d192eca69d7cfee41fc2f9af878b25f05b784db5beb9cc45d369591049e75396517ef45b98a6e2a7f395fc0515398c88ea61550a185ae15befc3fa6bc00b7a42c3cb2911a231c7463e9a04b68174b1c9738051c7cb1e300c6d9c06708e037572d4d98d5e5eff2b6a5b1aca4d5fcc9834536931a7512fa349c50aff750b5db487b7f3939a70a24b81dd602e62559ead7cb1fc8d3e506a6806ef9054e86e928ca21b0cfff59236fcfee6bb46f100b03335545e244e42aa681b9b261c446322099ed3ca17ca1f226299793fb3561d82e35ec07bd8775dde6fbeff4b5225ba246a6ed3c6fc4abfd27ccac03b981a59e061725b547eb1a6b86dd8018f725cce71d782a4ee4d7cad32971ddfcd63cde06e651d0e23b685eab85b874bd85918fa1a59da32f638e11a80a3b793abaa1acb842c3b01c16f2c40964cd36358ce375e055a"
+                }
+        ]
+};
+
+        let ADMIN_CONFIG = null;
+        let channelsData = [];
+        let failedAttempts = 0;
+        let lockoutTimer = null;
+        let inactivityTimer = null;
+        const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 mins
+
+        // --- Hex & Buffer Helpers ---
+        function hexToUint8(hexStr) {
+            const matches = hexStr.match(/.{1,2}/g) || [];
+            return new Uint8Array(matches.map(byte => parseInt(byte, 16)));
+        }
+
+        function uint8ToHex(bytes) {
+            return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // --- Web Crypto API Decryption Engine ---
+        async function attemptDecryptVault(passcode, vault, iterations = 100000) {
+            try {
+                const keyMaterial = await window.crypto.subtle.importKey(
+                    'raw',
+                    new TextEncoder().encode(passcode),
+                    { name: 'PBKDF2' },
+                    false,
+                    ['deriveKey']
+                );
+
+                const aesKey = await window.crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: hexToUint8(vault.salt),
+                        iterations: iterations,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['decrypt']
+                );
+
+                const decryptedBuf = await window.crypto.subtle.decrypt(
+                    {
+                        name: 'AES-GCM',
+                        iv: hexToUint8(vault.iv),
+                        tagLength: 128
+                    },
+                    aesKey,
+                    hexToUint8(vault.data)
+                );
+
+                const decryptedStr = new TextDecoder().decode(decryptedBuf);
+                return JSON.parse(decryptedStr);
+            } catch (err) {
+                // OperationError on wrong key or tag mismatch
+                return null;
+            }
+        }
+
+        async function verifyAndUnlock(passcode, saveRemember = false) {
+            const iter = VAULTS_DATA.iterations || 100000;
+            let decryptedObj = null;
+
+            for (const v of VAULTS_DATA.vaults) {
+                decryptedObj = await attemptDecryptVault(passcode, v, iter);
+                if (decryptedObj && decryptedObj.saKey) break;
+            }
+
+            if (!decryptedObj || !decryptedObj.saKey) {
+                return false;
+            }
+
+            ADMIN_CONFIG = decryptedObj;
+
+            // Session persistence
+            sessionStorage.setItem('BEOUT_SESSION_PASS', passcode);
+            if (saveRemember) {
+                localStorage.setItem('BEOUT_REMEMBER_PASS', passcode);
+            } else {
+                localStorage.removeItem('BEOUT_REMEMBER_PASS');
+            }
+
+            unlockConsoleUI();
+            return true;
+        }
+
+        function unlockConsoleUI() {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-console').style.display = 'block';
+
+            const badge = document.getElementById('hdr-auth-badge');
+            badge.className = 'status-chip success';
+            badge.innerHTML = '<i class="fa-solid fa-lock-open"></i> المشرف معتمد';
+
+            document.getElementById('hdr-logout-btn').style.display = 'inline-flex';
+
+            const sessionTimeEl = document.getElementById('sec-session-time');
+            if (sessionTimeEl) sessionTimeEl.innerText = 'نشطة منذ: ' + new Date().toLocaleTimeString('ar-EG');
+
+            // Initialize app data securely
+            loadChannels();
+            loadGateway();
+            loadLatestNotification();
+            loadNotificationHistory();
+
+            resetInactivityTimer();
+            showToast('🔓 تم تأكيد الهوية وفك تشفير اللوحة بنجاح');
+        }
+
+        function handleLogout() {
+            ADMIN_CONFIG = null;
+            sessionStorage.removeItem('BEOUT_SESSION_PASS');
+            localStorage.removeItem('BEOUT_REMEMBER_PASS');
+
+            document.getElementById('main-console').style.display = 'none';
+            document.getElementById('auth-screen').style.display = 'flex';
+
+            const badge = document.getElementById('hdr-auth-badge');
+            badge.className = 'status-chip locked';
+            badge.innerHTML = '<i class="fa-solid fa-lock"></i> مقفل ومشفر';
+
+            document.getElementById('hdr-logout-btn').style.display = 'none';
+            document.getElementById('auth-passcode-input').value = '';
+
+            const errBox = document.getElementById('auth-error-box');
+            errBox.style.display = 'none';
+
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+            showToast('🔒 تم تسجيل الخروج وقفل اللوحة بنجاح');
+        }
+
+        function resetInactivityTimer() {
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+            if (!ADMIN_CONFIG) return;
+            inactivityTimer = setTimeout(() => {
+                showToast('⏱️ تم قفل اللوحة تلقائياً نظراً لعدم النشاط');
+                handleLogout();
+            }, INACTIVITY_TIMEOUT_MS);
+        }
+
+        ['mousemove', 'keydown', 'touchstart'].forEach(evt => {
+            window.addEventListener(evt, resetInactivityTimer, { passive: true });
+        });
+
+        async function submitAuthPasscode() {
+            const passInput = document.getElementById('auth-passcode-input');
+            const passcode = passInput.value.trim();
+            const remember = document.getElementById('auth-remember-check').checked;
+            const errBox = document.getElementById('auth-error-box');
+            const submitBtn = document.getElementById('btn-auth-submit');
+            const cardBox = document.getElementById('auth-card-box');
+
+            if (!passcode) return;
+
+            // Anti-brute force lockout
+            if (failedAttempts >= 5) {
+                errBox.innerText = '⚠️ تم تجاوز عدد المحاولات المسموح بها! يرجى الانتظار دقيقة واحدة.';
+                errBox.style.display = 'block';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري فك التشفير والتحقق...';
+
+            const ok = await verifyAndUnlock(passcode, remember);
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fa-solid fa-unlock-keyhole"></i> تأكيد وفك تشفير اللوحة';
+
+            if (!ok) {
+                failedAttempts++;
+                cardBox.classList.remove('auth-shake');
+                void cardBox.offsetWidth; // trigger reflow
+                cardBox.classList.add('auth-shake');
+
+                errBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> رمز الدخول غير صحيح! تم رفض فك التشفير (' + failedAttempts + '/5).';
+                errBox.style.display = 'block';
+
+                if (failedAttempts >= 5) {
+                    let countdown = 60;
+                    submitBtn.disabled = true;
+                    errBox.innerHTML = '<i class="fa-solid fa-ban"></i> تم قفل الإدخال مؤقتاً! انتظر ' + countdown + ' ثانية.';
+                    lockoutTimer = setInterval(() => {
+                        countdown--;
+                        if (countdown <= 0) {
+                            clearInterval(lockoutTimer);
+                            failedAttempts = 0;
+                            submitBtn.disabled = false;
+                            errBox.style.display = 'none';
+                        } else {
+                            errBox.innerHTML = '<i class="fa-solid fa-ban"></i> تم قفل الإدخال مؤقتاً! انتظر ' + countdown + ' ثانية.';
+                        }
+                    }, 1000);
+                }
+            } else {
+                failedAttempts = 0;
+                errBox.style.display = 'none';
+            }
+        }
+
+        function togglePassVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa-regular fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa-regular fa-eye';
+            }
+        }
+
+        async function updateAdminPasscode() {
+            const p1 = document.getElementById('new-pass-input').value.trim();
+            const p2 = document.getElementById('confirm-pass-input').value.trim();
+
+            if (!p1) {
+                alert('يرجى إدخال رمز الدخول الجديد أولاً.');
+                return;
+            }
+            if (p1 !== p2) {
+                alert('خطأ: الرمز وتأكيده غير متطابقين!');
+                return;
+            }
+            if (!ADMIN_CONFIG) {
+                alert('خطأ: الجلسة غير مصرح بها.');
+                return;
+            }
+
+            try {
+                const payloadStr = JSON.stringify(ADMIN_CONFIG);
+                const salt = window.crypto.getRandomValues(new Uint8Array(16));
+                const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+                const km = await window.crypto.subtle.importKey('raw', new TextEncoder().encode(p1), { name: 'PBKDF2' }, false, ['deriveKey']);
+                const key = await window.crypto.subtle.deriveKey(
+                    { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+                    km,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['encrypt']
+                );
+                const cipherBuf = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(payloadStr));
+
+                const newVault = {
+                    id: 'custom_pass',
+                    type: 'custom',
+                    salt: uint8ToHex(salt),
+                    iv: uint8ToHex(iv),
+                    data: uint8ToHex(new Uint8Array(cipherBuf))
+                };
+
+                VAULTS_DATA.vaults.unshift(newVault);
+                sessionStorage.setItem('BEOUT_SESSION_PASS', p1);
+                localStorage.setItem('BEOUT_REMEMBER_PASS', p1);
+
+                document.getElementById('new-pass-input').value = '';
+                document.getElementById('confirm-pass-input').value = '';
+
+                showToast('✅ تم تشفير واعتماد رمز الدخول الجديد بنجاح في الجلسة الحالية');
+                alert('تم تحديث رمز الدخول بنجاح! يمكنك الآن الدخول باستخدام الرمز الجديد.');
+            } catch (e) {
+                alert('فشل التحديث: ' + e.message);
+            }
+        }
+
+        // --- Core UI & Navigation Helpers ---
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 3000);
+        }
+
+        function setTab(tabName) {
+            document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            
+            const pane = document.getElementById('pane-' + tabName);
+            const btn = document.getElementById('tab-btn-' + tabName);
+            if (pane) pane.classList.add('active');
+            if (btn) btn.classList.add('active');
+        }
+
+        function toggleAccordion(id) {
+            const body = document.getElementById(id);
+            body.classList.toggle('open');
+        }
+
+        // --- Channels Management & Realtime Sync ---
+        function getRtdbUrl(path) {
+            const base = (ADMIN_CONFIG && ADMIN_CONFIG.rtdbUrl) ? ADMIN_CONFIG.rtdbUrl : 'https://digite-bda04-default-rtdb.firebaseio.com';
+            return base + path;
+        }
+
+        async function loadChannels() {
+            try {
+                // 1. Try Firebase Realtime Database first
+                const fbRes = await fetch(getRtdbUrl('/channels.json?t=') + Date.now());
+                if (fbRes.ok) {
+                    const fbData = await fbRes.json();
+                    if (fbData) {
+                        channelsData = Array.isArray(fbData) ? fbData.filter(Boolean) : Object.values(fbData).filter(Boolean);
+                        renderChannelsTable();
+                        document.getElementById('stat-channels-count').innerText = channelsData.length;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('Firebase RTDB channels load notice:', e);
+            }
+
+            // 2. Fallback to static channels.json
+            try {
+                const res = await fetch('/channels.json?t=' + Date.now());
+                channelsData = await res.json();
+                renderChannelsTable();
+                document.getElementById('stat-channels-count').innerText = channelsData.length;
+            } catch (e) {
+                console.error('Failed to load channels:', e);
+            }
+        }
+
+        async function syncChannelsToCloud(showNotification = true) {
+            try {
+                const res = await fetch(getRtdbUrl('/channels.json'), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(channelsData)
+                });
+                if (res.ok) {
+                    if (showNotification) showToast('☁️ تم حفظ ومزامنة القنوات سحابياً مع التطبيق فوراً');
+                    return true;
+                } else {
+                    if (showNotification) showToast('⚠️ تعذر الحفظ في السحابة (' + res.status + ')');
+                    return false;
+                }
+            } catch (e) {
+                console.error('Cloud sync error:', e);
+                if (showNotification) showToast('⚠️ تعذر الاتصال بسحابة Firebase');
+                return false;
+            }
+        }
+
+        function renderChannelsTable() {
+            const tbody = document.getElementById('tbl-channels-body');
+            tbody.innerHTML = '';
+            channelsData.forEach((ch, idx) => {
+                const hasHeaders = !!(ch.userAgent || ch.referer || ch.cookie || ch.drmKeyId || ch.drmLicenseUrl);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><img src="${ch.logoUrl || 'https://imagecache.365scores.com/image/upload/f_auto,w_80,h_80,c_limit,d_Competitions:default.png/Competitions/572'}" class="tbl-logo"></td>
+                    <td style="font-weight: 600;">${escapeHtml(ch.name)}</td>
+                    <td><span class="tbl-tag">${escapeHtml(ch.category || 'رياضة')}</span></td>
+                    <td>${hasHeaders ? '<span class="tbl-tag" style="background:#132a1c; color:#3fb950;"><i class="fa-solid fa-lock"></i> مؤمنة</span>' : '<span style="color:var(--text-muted);">افتراضي</span>'}</td>
+                    <td style="max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; color: var(--text-muted);">${escapeHtml(ch.streamUrl)}</td>
+                    <td style="text-align: center;">
+                        <button class="btn btn-outline btn-sm" onclick="editChannel(${idx})" title="تعديل"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-outline btn-sm" onclick="previewStream('${escapeHtml(ch.name)}', '${escapeHtml(ch.streamUrl)}')" title="تشغيل"><i class="fa-solid fa-play"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteChannel(${idx})" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function handleChannelSubmit() {
+            const editIdx = parseInt(document.getElementById('edit-ch-index').value);
+            const name = document.getElementById('ch-name').value.trim();
+            const cat = document.getElementById('ch-cat').value.trim() || 'General';
+            const url = document.getElementById('ch-url').value.trim();
+            const logo = document.getElementById('ch-logo').value.trim();
+
+            const ua = document.getElementById('ch-ua').value.trim();
+            const ref = document.getElementById('ch-ref').value.trim();
+            const origin = document.getElementById('ch-origin').value.trim();
+            const cookie = document.getElementById('ch-cookie').value.trim();
+            const keyId = document.getElementById('ch-drm-keyid').value.trim();
+            const key = document.getElementById('ch-drm-key').value.trim();
+            const lic = document.getElementById('ch-drm-lic').value.trim();
+
+            if (!name || !url) {
+                alert('يرجى ملء اسم القناة ورابط البث');
+                return;
+            }
+
+            const item = {
+                id: editIdx >= 0 ? channelsData[editIdx].id : 'ch_' + Date.now(),
+                name: name,
+                category: cat,
+                logoUrl: logo,
+                streamUrl: url,
+                isLive: true,
+                quality: '1080p',
+                userAgent: ua || null,
+                referer: ref || null,
+                origin: origin || null,
+                cookie: cookie || null,
+                drmKeyId: keyId || null,
+                drmKey: key || null,
+                drmLicenseUrl: lic || null
+            };
+
+            const isEdit = editIdx >= 0;
+            if (isEdit) {
+                channelsData[editIdx] = item;
+            } else {
+                channelsData.push(item);
+            }
+
+            cancelEditChannel();
+            renderChannelsTable();
+            document.getElementById('stat-channels-count').innerText = channelsData.length;
+
+            showToast('⏳ جاري الحفظ والمزامنة السحابية...');
+            const synced = await syncChannelsToCloud(false);
+            if (synced) {
+                showToast(isEdit ? '✅ تم تحديث القناة ومزامنتها في السحابة والتطبيق فوراً' : '✅ تم إضافة القناة ومزامنتها في السحابة والتطبيق فوراً');
+            } else {
+                showToast(isEdit ? '✅ تم التعديل محلياً (يرجى الضغط على حفظ ومزامنة السحابة)' : '✅ تمت الإضافة محلياً (يرجى الضغط على حفظ ومزامنة السحابة)');
+            }
+        }
+
+        function editChannel(idx) {
+            const ch = channelsData[idx];
+            document.getElementById('edit-ch-index').value = idx;
+            document.getElementById('ch-name').value = ch.name || '';
+            document.getElementById('ch-cat').value = ch.category || '';
+            document.getElementById('ch-url').value = ch.streamUrl || '';
+            document.getElementById('ch-logo').value = ch.logoUrl || '';
+
+            document.getElementById('ch-ua').value = ch.userAgent || '';
+            document.getElementById('ch-ref').value = ch.referer || '';
+            document.getElementById('ch-origin').value = ch.origin || '';
+            document.getElementById('ch-cookie').value = ch.cookie || '';
+            document.getElementById('ch-drm-keyid').value = ch.drmKeyId || '';
+            document.getElementById('ch-drm-key').value = ch.drmKey || '';
+            document.getElementById('ch-drm-lic').value = ch.drmLicenseUrl || '';
+
+            document.getElementById('ch-form-title').innerHTML = '<i class="fa-solid fa-pen"></i> تعديل القناة: ' + escapeHtml(ch.name);
+            document.getElementById('btn-save-channel').innerHTML = '<i class="fa-solid fa-check"></i> حفظ التعديل والمزامنة';
+            document.getElementById('btn-cancel-edit').style.display = 'inline-flex';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEditChannel() {
+            document.getElementById('edit-ch-index').value = '-1';
+            document.getElementById('ch-name').value = '';
+            document.getElementById('ch-cat').value = '';
+            document.getElementById('ch-url').value = '';
+            document.getElementById('ch-logo').value = '';
+
+            document.getElementById('ch-ua').value = '';
+            document.getElementById('ch-ref').value = '';
+            document.getElementById('ch-origin').value = '';
+            document.getElementById('ch-cookie').value = '';
+            document.getElementById('ch-drm-keyid').value = '';
+            document.getElementById('ch-drm-key').value = '';
+            document.getElementById('ch-drm-lic').value = '';
+
+            document.getElementById('ch-form-title').innerHTML = '<i class="fa-solid fa-plus"></i> إضافة قناة بث مباشر';
+            document.getElementById('btn-save-channel').innerHTML = '<i class="fa-solid fa-plus"></i> حفظ القناة';
+            document.getElementById('btn-cancel-edit').style.display = 'none';
+        }
+
+        async function deleteChannel(idx) {
+            const chName = channelsData[idx]?.name || 'القناة';
+            if (confirm('هل أنت متأكد من حذف ' + chName + '؟')) {
+                channelsData.splice(idx, 1);
+                renderChannelsTable();
+                document.getElementById('stat-channels-count').innerText = channelsData.length;
+                showToast('⏳ جاري حذف القناة من السحابة...');
+                await syncChannelsToCloud(false);
+                showToast('🗑️ تم حذف ' + chName + ' وتحديث السحابة والتطبيق');
+            }
+        }
+
+        function exportChannels() {
+            downloadJson(channelsData, 'channels.json');
+            showToast('💾 تم تصدير channels.json');
+        }
+
+        // --- Gateway & Maintenance ---
+        async function loadGateway() {
+            try {
+                let res = await fetch(getRtdbUrl('/gateway.json?t=') + Date.now());
+                if (!res.ok) {
+                    res = await fetch('/gateway.json?t=' + Date.now());
+                }
+                const gw = await res.json();
+                if (gw) {
+                    document.getElementById('gw-status').value = gw.status || 'NORMAL';
+                    document.getElementById('gw-msg').value = gw.maintenanceMessage || '';
+                    document.getElementById('gw-update-msg').value = gw.updateMessage || 'يتوفر إصدار جديد من تطبيق Beout TV. يرجى التحديث لمتابعة المشاهدة.';
+                    document.getElementById('gw-update-url').value = gw.updateUrl || 'https://t.me/beouttvapp';
+                    document.getElementById('gw-min-version-name').value = gw.minVersionName || gw.minSupportedVersion || '1.0';
+                    document.getElementById('gw-min-version-code').value = gw.minVersionCode || gw.minSupportedVersion || 1;
+                    
+                    const statEl = document.getElementById('stat-gateway-status');
+                    if (gw.status === 'NORMAL') {
+                        statEl.innerText = 'طبيعي (Normal - v' + (gw.minVersionName || '1.0') + '+)';
+                        statEl.style.color = '#3fb950';
+                    } else if (gw.status === 'MAINTENANCE') {
+                        statEl.innerText = 'صيانة (Maintenance)';
+                        statEl.style.color = '#d29922';
+                    } else if (gw.status === 'UPDATE_REQUIRED') {
+                        statEl.innerText = 'تحديث إجباري (Update Required)';
+                        statEl.style.color = '#da3633';
+                    } else {
+                        statEl.innerText = gw.status;
+                        statEl.style.color = '#da3633';
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function saveGateway() {
+            const status = document.getElementById('gw-status').value;
+            const msg = document.getElementById('gw-msg').value.trim();
+            const updateMsg = document.getElementById('gw-update-msg').value.trim();
+            const updateUrl = document.getElementById('gw-update-url').value.trim();
+            const minVersionName = document.getElementById('gw-min-version-name').value.trim() || '1.0';
+            const minVersionCode = parseInt(document.getElementById('gw-min-version-code').value.trim()) || 1;
+
+            const gwObj = {
+                status: status,
+                maintenanceMessage: msg,
+                updateMessage: updateMsg,
+                updateUrl: updateUrl || 'https://t.me/beouttvapp',
+                minSupportedVersion: minVersionCode,
+                minVersionCode: minVersionCode,
+                minVersionName: minVersionName,
+                latestVersionCode: minVersionCode,
+                latestVersionName: minVersionName,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                const res = await fetch(getRtdbUrl('/gateway.json'), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(gwObj)
+                });
+                if (res.ok) {
+                    showToast('✅ تم حفظ إعدادات البوابة والتحديثات في Firebase Realtime DB');
+                    loadGateway();
+                } else {
+                    downloadJson(gwObj, 'gateway.json');
+                    showToast('💾 تم تنزيل gateway.json محلياً');
+                }
+            } catch (e) {
+                downloadJson(gwObj, 'gateway.json');
+                showToast('💾 تم تنزيل gateway.json محلياً');
+            }
+        }
+
+        // --- Push Notifications & Cloud Auth ---
+        async function getGoogleOAuthToken() {
+            try {
+                if (typeof KJUR === 'undefined' || !ADMIN_CONFIG || !ADMIN_CONFIG.saKey) return null;
+                const header = JSON.stringify({ alg: 'RS256', typ: 'JWT' });
+                const now = Math.floor(Date.now() / 1000);
+                const payload = JSON.stringify({
+                    iss: ADMIN_CONFIG.clientEmail,
+                    sub: ADMIN_CONFIG.clientEmail,
+                    aud: 'https://oauth2.googleapis.com/token',
+                    iat: now,
+                    exp: now + 3600,
+                    scope: 'https://www.googleapis.com/auth/firebase.messaging'
+                });
+                const sJWT = KJUR.jws.JWS.sign(null, header, payload, ADMIN_CONFIG.saKey);
+                const res = await fetch('https://oauth2.googleapis.com/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                        assertion: sJWT
+                    })
+                });
+                const data = await res.json();
+                return data.access_token;
+            } catch (e) {
+                console.error('OAuth Token Error:', e);
+                return null;
+            }
+        }
+
+        function onNotifTypeChanged() {
+            const type = document.getElementById('notif-type').value;
+            const isAdCheck = document.getElementById('notif-is-ad');
+            const actionTitleInput = document.getElementById('notif-action-title');
+            if (type === 'AD') {
+                isAdCheck.checked = true;
+                if (!actionTitleInput.value) actionTitleInput.value = 'عرض الإعلان';
+            } else if (type === 'MATCH') {
+                isAdCheck.checked = false;
+                if (!actionTitleInput.value) actionTitleInput.value = 'مشاهدة المباراة';
+            } else {
+                isAdCheck.checked = false;
+            }
+        }
+
+        async function sendBroadcastNotification() {
+            const title = document.getElementById('notif-title').value.trim();
+            const message = document.getElementById('notif-msg').value.trim();
+            const type = document.getElementById('notif-type').value || 'BROADCAST';
+            const actionUrl = document.getElementById('notif-action-url').value.trim();
+            const actionTitle = document.getElementById('notif-action-title').value.trim();
+            const imageUrl = document.getElementById('notif-image-url').value.trim();
+            const isAd = document.getElementById('notif-is-ad').checked || type === 'AD';
+
+            if (!title || !message) {
+                alert('يرجى كتابة عنوان الإشعار ونص الرسالة أولاً.');
+                return;
+            }
+
+            const notifId = 'notif_' + Date.now();
+            const payload = {
+                id: notifId,
+                title: title,
+                message: message,
+                type: type,
+                actionUrl: actionUrl || null,
+                actionTitle: actionTitle || null,
+                imageUrl: imageUrl || null,
+                isAd: isAd,
+                timestamp: new Date().toISOString(),
+                enabled: true
+            };
+
+            try {
+                // 1. Write active broadcast and append to permanent history
+                await Promise.all([
+                    fetch(getRtdbUrl('/notifications/broadcast.json'), {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    }),
+                    fetch(getRtdbUrl(`/notifications/history/${notifId}.json`), {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    })
+                ]);
+
+                // 2. Dispatch official Firebase Cloud Messaging (FCM HTTP v1) Data-Only message
+                try {
+                    const token = await getGoogleOAuthToken();
+                    if (token) {
+                        const fcmData = {
+                            id: notifId,
+                            title: title,
+                            message: message,
+                            type: type,
+                            isAd: isAd ? 'true' : 'false'
+                        };
+                        if (actionUrl) fcmData.actionUrl = actionUrl;
+                        if (actionTitle) fcmData.actionTitle = actionTitle;
+                        if (imageUrl) fcmData.imageUrl = imageUrl;
+
+                        const projId = (ADMIN_CONFIG && ADMIN_CONFIG.projectId) ? ADMIN_CONFIG.projectId : 'digite-bda04';
+                        await fetch(`https://fcm.googleapis.com/v1/projects/${projId}/messages:send`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + token
+                            },
+                            body: JSON.stringify({
+                                message: {
+                                    topic: 'all_users',
+                                    data: fcmData,
+                                    android: {
+                                        priority: 'HIGH'
+                                    }
+                                }
+                            })
+                        });
+                    }
+                } catch (e) {
+                    console.error('FCM v1 Send Error:', e);
+                }
+
+                showToast('تم إرسال الإشعار لجميع الأجهزة وحفظه في السجل بنجاح!');
+                document.getElementById('notif-title').value = '';
+                document.getElementById('notif-msg').value = '';
+                document.getElementById('notif-action-url').value = '';
+                document.getElementById('notif-action-title').value = '';
+                document.getElementById('notif-image-url').value = '';
+                document.getElementById('notif-is-ad').checked = false;
+                loadLatestNotification();
+                loadNotificationHistory();
+            } catch (e) {
+                alert('خطأ في الاتصال: ' + e.message);
+            }
+        }
+
+        async function loadLatestNotification() {
+            try {
+                const res = await fetch(getRtdbUrl('/notifications/broadcast.json?t=') + Date.now());
+                const data = await res.json();
+                const box = document.getElementById('latest-notif-box');
+                if (data && data.title) {
+                    const isAd = data.isAd === true || data.type === 'AD';
+                    let badgeClass = 'badge-broadcast';
+                    let badgeLabel = '<i class="fa-solid fa-tower-broadcast"></i> بث مباشر';
+                    if (isAd) {
+                        badgeClass = 'badge-ad';
+                        badgeLabel = '<i class="fa-solid fa-rectangle-ad"></i> إعلان ممول';
+                    } else if (data.type === 'URGENT') {
+                        badgeClass = 'badge-urgent';
+                        badgeLabel = '<i class="fa-solid fa-triangle-exclamation"></i> تنبيه عاجل';
+                    } else if (data.type === 'MATCH') {
+                        badgeClass = 'badge-broadcast';
+                        badgeLabel = '<i class="fa-solid fa-futbol"></i> مباراة';
+                    }
+
+                    const actionBtn = data.actionUrl ? `
+                        <a href="${escapeHtml(data.actionUrl)}" target="_blank" class="btn btn-outline btn-sm" style="margin-top: 6px; display: inline-flex; text-decoration: none;">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> ${escapeHtml(data.actionTitle || 'فتح الرابط')}
+                        </a>
+                    ` : '';
+
+                    const imgThumb = data.imageUrl ? `
+                        <img src="${escapeHtml(data.imageUrl)}" style="width: 52px; height: 52px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0;" onerror="this.style.display='none'">
+                    ` : '';
+
+                    box.innerHTML = `
+                        <div style="background: var(--bg-card); border: 1px solid ${isAd ? 'rgba(229, 169, 60, 0.45)' : 'var(--border)'}; border-radius: var(--radius-sm); padding: 12px 14px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                            <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                ${imgThumb}
+                                <div>
+                                    <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 5px;">
+                                        <span class="${badgeClass}">${badgeLabel}</span>
+                                        <div style="font-weight: 700; color: #fff;">${escapeHtml(data.title)}</div>
+                                    </div>
+                                    <div style="color: var(--text-main); margin-bottom: 6px; font-size: 13px;">${escapeHtml(data.message)}</div>
+                                    ${actionBtn}
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;"><i class="fa-solid fa-clock"></i> تم الإرسال: ${new Date(data.timestamp).toLocaleString('ar-EG')}</div>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-danger btn-sm" onclick="clearActiveBroadcast()"><i class="fa-solid fa-trash-can"></i> حذف البث</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    box.innerHTML = '<span style="color: var(--text-muted);"><i class="fa-solid fa-circle-info"></i> لا يوجد بث إشعار نشط حالياً على السيرفر.</span>';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function clearActiveBroadcast() {
+            if (!confirm('هل أنت متأكد من مسح وإلغاء البث النشط الحالي؟ لن يظهر الإشعار للأجهزة بعد الآن.')) return;
+            try {
+                await fetch(getRtdbUrl('/notifications/broadcast.json'), {
+                    method: 'DELETE'
+                });
+                showToast('تم مسح البث النشط بنجاح.');
+                loadLatestNotification();
+            } catch (e) {
+                alert('فشل مسح البث النشط: ' + e.message);
+            }
+        }
+
+        async function loadNotificationHistory() {
+            const tbody = document.getElementById('tbl-notifications-history-body');
+            const countBadge = document.getElementById('notif-history-count');
+            try {
+                const res = await fetch(getRtdbUrl('/notifications/history.json?t=') + Date.now());
+                const data = await res.json();
+                if (!data || Object.keys(data).length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 18px;">لا توجد أي إشعارات محفوظة في السجل.</td></tr>';
+                    if (countBadge) countBadge.innerText = '0';
+                    return;
+                }
+
+                const items = Object.entries(data).map(([key, val]) => ({
+                    key,
+                    ...val
+                })).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+
+                if (countBadge) countBadge.innerText = items.length;
+
+                tbody.innerHTML = items.map(item => {
+                    const isAd = item.isAd === true || item.type === 'AD';
+                    let badgeClass = 'badge-broadcast';
+                    let badgeText = 'عام';
+                    if (isAd) {
+                        badgeClass = 'badge-ad';
+                        badgeText = 'إعلان ممول';
+                    } else if (item.type === 'URGENT') {
+                        badgeClass = 'badge-urgent';
+                        badgeText = 'عاجل';
+                    } else if (item.type === 'MATCH') {
+                        badgeClass = 'badge-broadcast';
+                        badgeText = 'مباراة';
+                    }
+
+                    const actionCell = item.actionUrl ? `
+                        <a href="${escapeHtml(item.actionUrl)}" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 11.5px; display: inline-flex; align-items: center; gap: 4px;" title="${escapeHtml(item.actionUrl)}">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> ${escapeHtml(item.actionTitle || 'فتح الرابط')}
+                        </a>
+                    ` : '<span style="color: var(--text-muted); font-size: 11px;">بدون رابط</span>';
+
+                    return `
+                    <tr>
+                        <td><span class="${badgeClass}">${badgeText}</span></td>
+                        <td style="font-weight: 700; color: #fff;">${escapeHtml(item.title || '')}</td>
+                        <td style="color: var(--text-main); font-size: 12px;">${escapeHtml(item.message || '')}</td>
+                        <td>${actionCell}</td>
+                        <td style="color: var(--text-muted); font-size: 11.5px; white-space: nowrap;"><i class="fa-solid fa-clock"></i> ${item.timestamp ? new Date(item.timestamp).toLocaleDateString('ar-EG') : 'غير محدد'}</td>
+                        <td style="text-align: center; white-space: nowrap;">
+                            <button class="btn btn-outline btn-sm" onclick="setAsBroadcast('${item.key}')" title="تعيين كبث نشط" style="margin-left: 4px;"><i class="fa-solid fa-tower-broadcast"></i> بث</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteNotificationItem('${item.key}')" title="حذف من السجل"><i class="fa-solid fa-trash-can"></i> حذف</button>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger); padding: 18px;">خطأ في تحميل السجل: ${e.message}</td></tr>`;
+            }
+        }
+
+        async function deleteNotificationItem(id) {
+            if (!confirm('هل أنت متأكد من حذف هذا الإشعار نهائياً من السجل؟')) return;
+            try {
+                await fetch(getRtdbUrl(`/notifications/history/${id}.json`), {
+                    method: 'DELETE'
+                });
+                showToast('تم حذف الإشعار بنجاح من السجل.');
+                loadNotificationHistory();
+            } catch (e) {
+                alert('فشل الحذف: ' + e.message);
+            }
+        }
+
+        async function clearAllNotificationsHistory() {
+            if (!confirm('تحذير: هل أنت متأكد من مسح كامل سجل الإشعارات من قاعدة البيانات؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+            try {
+                await fetch(getRtdbUrl('/notifications/history.json'), {
+                    method: 'DELETE'
+                });
+                showToast('تم مسح كامل سجل الإشعارات بنجاح.');
+                loadNotificationHistory();
+            } catch (e) {
+                alert('فشل مسح السجل: ' + e.message);
+            }
+        }
+
+        async function setAsBroadcast(id) {
+            try {
+                const res = await fetch(getRtdbUrl(`/notifications/history/${id}.json`));
+                const item = await res.json();
+                if (!item) {
+                    alert('لم يتم العثور على الإشعار.');
+                    return;
+                }
+                await fetch(getRtdbUrl('/notifications/broadcast.json'), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(item)
+                });
+                showToast('تم تعيين الإشعار كبث نشط بنجاح.');
+                loadLatestNotification();
+            } catch (e) {
+                alert('فشل التعيين: ' + e.message);
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // --- Helpers ---
+        function downloadJson(obj, filename) {
+            const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+        }
+
+        function previewStream(name, url) {
+            document.getElementById('modal-title').innerText = 'معاينة البث: ' + name;
+            const video = document.getElementById('player-video');
+            const modal = document.getElementById('modal-player');
+            modal.style.display = 'flex';
+
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+            }
+        }
+
+        function closePlayerModal() {
+            const video = document.getElementById('player-video');
+            video.pause();
+            video.src = '';
+            document.getElementById('modal-player').style.display = 'none';
+        }
+
+        // --- Initialization & Auto-Login ---
+        (async function initSecurity() {
+            // Check for saved session or remember token
+            const savedSession = sessionStorage.getItem('BEOUT_SESSION_PASS');
+            const savedRemember = localStorage.getItem('BEOUT_REMEMBER_PASS');
+            const passToTry = savedSession || savedRemember;
+
+            if (passToTry) {
+                const unlocked = await verifyAndUnlock(passToTry, !!savedRemember);
+                if (unlocked) return;
+            }
+
+            // Otherwise, keep console locked and ready for input
+            document.getElementById('auth-passcode-input').focus();
+        })();
+    </script>
+</body>
+</html>

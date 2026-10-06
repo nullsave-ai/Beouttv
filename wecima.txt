@@ -1,0 +1,62 @@
+لكي يقبل الـ API الاتصال ولا يقوم بحظره، يرسل كود التطبيق في ApiClient.java
+  الترويسات التالية في كل طلب:
+
+    User-Agent: okhttp/4.12.0
+    X-App-Key: sv_x9k2m7p4q8n3r6t1w5y0z
+    X-App-Sig: 0de08ec6cd0526dcc699041ed8e6dfb3
+    X-App-Chk: cebe2159                                                                  X-Device-ID: 3b29c9ef4e872d8a
+    X-Device-Name: Samsung SM-S901B                                                    ──────
+  ### 📡 روابط وتفاصيل عمليات الـ API (Endpoints)
+
+  #### 1. جلب الأقسام والتصنيفات (Categories)
+
+  • الرابط:  https://wecima.bar/api.php?action=categories
+  • الوظيفة: جلب جميع أقسام الأفلام والمسلسلات المتوفرة (أفلام عربي، أفلام أجنبي،      مسلسلات، إلخ).
+  • البيانات المستخرجة: مصفوفة JSON تحتوي على الاسم ( name ) والمعرّف الفريّد للقسم      ( slug ).
+
+  #### 2. جلب قائمة الأفلام والمسلسلات (Posts/Items)
+
+  • الروابط:                                                                               • الكل:  https://wecima.bar/api.
+      php?action=posts&page={page}&per_page=20&type=all
+      • الفلترة بحسب قسم معين:  https://wecima.bar/api.
+      php?action=posts&page={page}&per_page=20&category={category_slug}
+      • البحث عن فيلم/مسلسل:  https://wecima.bar/api.                                      php?action=posts&search={query}&page={page}&per_page=20
+  • البيانات المستخرجة: مصفوفة  posts  حيث يحتوي كل عنصر على المعرف ( id )،
+  العنوان ( title )، البوستر ( thumbnail )، وسنة الإنتاج ( release-year ).
+  • طريقة تحديد النوع: إذا احتوى العنصر على المعرف ( series_slug ) أو (
+  season_slug ) يتم تصنيفه كمسلسل، وإلا يُصنف كفيلم.
+
+  #### 3. جلب تفاصيل الفيلم أو المسلسل (Movie/Series Details)
+
+  • الروابط:
+      • باستخدام المعرّف الرقمي:  https://wecima.bar/api.php?action=posts&id={id}           • باستخدام معرّف الموسم (للمسلسلات):  https://wecima.bar/api.
+      php?action=posts&season_slug={season_slug}&page=1&per_page=100
+  • البيانات المستخرجة:                                                                    •  realid : المعرّف الحقيقي الذي سيستخدم لاحقاً لجلب روابط التشغيل.
+      •  meta.story : قصة الفيلم/المسلسل.
+      •  meta.download_links_list : مصفوفة تحتوي على جودات التحميل المتوفرة
+      وروابطها المباشرة.
+      •  terms : تفاصيل إضافية مثل (الممثلين، المخرج، الجودة، النوع).
+
+
+  #### 4. جلب روابط المشاهدة/البث المباشر (Stream Link)
+
+  • الرابط:  https://wecima.bar/api.php?action=stream&realid={realid}
+  • الوظيفة: الحصول على روابط البث المباشر للفيلم أو الحلقة المحددة.
+  • البيانات المستخرجة: حقل  url  يحتوي على رابط تشغيل مشغل الفيديو (والذي يتم
+  تمريره إلى WebPlayerActivity.java).
+
+  #### 5. جلب مواسم المسلسل (Seasons)
+
+  • الرابط:  https://wecima.bar/api.php?action=seasons&series_slug={series_slug}
+  • الوظيفة: جلب جميع مواسم المسلسل المختار.
+  • البيانات المستخرجة: مصفوفة تحتوي على اسم الموسم ( name ) ومعرفه ( slug ).
+
+  #### 6. جلب حلقات الموسم (Episodes)
+
+  • الرابط:  https://wecima.bar/api.
+  php?action=posts&season_slug={season_slug}&page=1&per_page=100
+  • الوظيفة: جلب جميع الحلقات التابعة لهذا الموسم.                                     • البيانات المستخرجة: حلقات المسلسل مع استخراج رقم الحلقة من  meta.number
+  وعنوانها ورقم المعرف الخاص بها ( id ) لتشغيلها.
+  ──────
+  هل ترغب في تعديل أي من هذه الروابط، أم تريد فحص كيفية عمل مشغل الفيديو الذي يقوم
+  بتشغيل هذه الروابط؟

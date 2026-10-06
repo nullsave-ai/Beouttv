@@ -1,0 +1,15 @@
+{
+  "status": "NORMAL",
+  "maintenance_message": "التطبيق قيد الصيانة والتطوير، سنعود للعمل قريباً.",
+  "update_message": "يتوفر إصدار جديد من تطبيق Beout TV. يرجى التحديث لمتابعة المشاهدة.",
+  "update_url": "https://t.me/beouttvapp",
+  "min_version_code": 1,
+  "min_version_name": "1.0",
+  "latest_version_code": 1,
+  "latest_version_name": "1.0",
+  "api_url": "https://wecima.bar/api.php",
+  "catalog_url": "https://digite-bda04.web.app/catalog.pb.gz",
+  "channels_url": "https://digite-bda04.web.app/channels.json",
+  "matches_url": "https://digite-bda04.web.app/matches.json",
+  "last_updated": "2026-09-08"
+}

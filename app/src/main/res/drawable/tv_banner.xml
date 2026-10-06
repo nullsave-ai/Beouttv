@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Dark obsidian background with 16:9 aspect ratio -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="#FF080C14"
+                android:centerColor="#FF0D1322"
+                android:endColor="#FF05070C"
+                android:type="linear" />
+            <size
+                android:width="320dp"
+                android:height="180dp" />
+        </shape>
+    </item>
+
+    <!-- Glowing ambient accent in top-end -->
+    <item
+        android:width="160dp"
+        android:height="160dp"
+        android:gravity="top|end"
+        android:top="-30dp"
+        android:right="-30dp">
+        <shape android:shape="oval">
+            <gradient
+                android:gradientRadius="100dp"
+                android:startColor="#331E88E5"
+                android:endColor="#00000000"
+                android:type="radial" />
+        </shape>
+    </item>
+
+    <!-- BeoutTV Center Logo & Watermark Symbol -->
+    <item
+        android:width="140dp"
+        android:height="52dp"
+        android:gravity="center"
+        android:drawable="@drawable/beout_watermark" />
+
+    <!-- Bottom border glow line -->
+    <item
+        android:height="3dp"
+        android:gravity="bottom">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="0"
+                android:startColor="#001E88E5"
+                android:centerColor="#FF1E88E5"
+                android:endColor="#001E88E5"
+                android:type="linear" />
+        </shape>
+    </item>
+</layer-list>

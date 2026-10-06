@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">بي أوت تي في</string>
+
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_live">البث المباشر</string>
+    <string name="nav_sports">رياضة</string>
+    <string name="nav_search">بحث</string>
+    <string name="nav_more">المزيد</string>
+
+    <string name="section_continue_watching">متابعة المشاهدة</string>
+    <string name="section_live_channels">القنوات المباشرة</string>
+    <string name="section_sports">رياضة</string>
+    <string name="section_movies">أفلام</string>
+    <string name="section_series">مسلسلات</string>
+    <string name="section_recommended">موصى به</string>
+    <string name="see_all">عرض الكل</string>
+
+    <string name="empty_favorites_title">لا توجد مفضلات بعد</string>
+    <string name="empty_favorites_description">أضف قنوات أو أفلام أو مسلسلات للوصول إليها بسرعة.</string>
+    <string name="explore_content">استكشف المحتوى</string>
+
+    <string name="error_title">تعذر تحميل المحتوى</string>
+    <string name="error_description">حدث خطأ ما أثناء تحميل هذه الصفحة.</string>
+    <string name="retry">إعادة المحاولة</string>
+    <string name="back">رجوع</string>
+
+    <string name="search_hint">ابحث عن قنوات، أفلام، مسلسلات</string>
+    <string name="live_now">مباشر</string>
+</resources>

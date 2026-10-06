@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "321331481126",
+    "firebase_url": "https://digite-bda04-default-rtdb.firebaseio.com",
+    "project_id": "digite-bda04",
+    "storage_bucket": "digite-bda04.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:321331481126:android:8de9c3e85c2f441014f4e7",
+        "android_client_info": {
+          "package_name": "com.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "321331481126-dtl2jeti8mbfcdcgi68aokgeem70r63t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiqrTu_hDBkAY44eiNcWWQDVmQVCRUvbE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "321331481126-dtl2jeti8mbfcdcgi68aokgeem70r63t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

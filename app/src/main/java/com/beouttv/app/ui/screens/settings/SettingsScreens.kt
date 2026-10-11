@@ -502,15 +502,38 @@ fun TvYouTubeStyleMoreScreen(
 
                                 Spacer(Modifier.height(8.dp))
 
-                                SettingsSwitchRow(
-                                    title = tr("تفعيل الفلتر الأخلاقي (+18)", "Enable Adult Content Filter (+18)", "Yetişkin İçerik Filtresi (+18)", "فیلتر محتوای بزرگسال (+18)", "Filtre de contenu adulte (+18)"),
-                                    subtitle = tr("حجب وتصفية القنوات والأفلام ذات التصنيف الإباحي أو غير اللائق", "Blocks and filters adult (+18) and inappropriate content", "Yetişkin (+18) ve uygunsuz içerikleri engeller", "مسدودسازی محتوای نامناسب و بزرگسال", "Bloque le contenu adulte et inapproprié"),
-                                    checked = adultFilterEnabled,
-                                    onCheckedChange = {
-                                        adultFilterEnabled = it
-                                        PlayerPreferences.setAdultFilterEnabled(context, it)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = tr("الفلتر الأخلاقي العائلي (+18)", "Family Moral Filter (+18)", "Aile Ahlak Filtresi (+18)", "فیلتر اخلاقی خانواده (+18)", "Filtre moral familial (+18)"),
+                                            style = BeoutTextStyles.CardTitle.copy(fontWeight = FontWeight.Bold),
+                                            color = BeoutColors.TextPrimary
+                                        )
+                                        Text(
+                                            text = tr("مفعل إجبارياً لحماية الأسرة وحجب المحتوى غير اللائق تماماً", "Permanently enforced to protect families and block adult content", "Aileleri korumak için zorunlu olarak devrede", "اجباری و دائمی برای محافظت از خانواده", "Activé obligatoirement pour la sécurité de la famille"),
+                                            style = BeoutTextStyles.SecondaryInfo.copy(fontSize = 11.sp),
+                                            color = BeoutColors.BrightBlue
+                                        )
                                     }
-                                )
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(CircleShape)
+                                            .background(Color(0xFF22C55E).copy(alpha = 0.15f))
+                                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = tr("مفعل دائماً", "Active", "Aktif", "فعال", "Actif"),
+                                            color = Color(0xFF22C55E),
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
                             }
                         }
 
@@ -1278,8 +1301,7 @@ private fun MoreMenuRow(
 
 @Composable
 fun SettingsScreen(
-    onBack: () -> Unit,
-    onNavigateToShortDrama: () -> Unit = {}
+    onBack: () -> Unit
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREFS_SETTINGS, Context.MODE_PRIVATE) }
@@ -1289,7 +1311,6 @@ fun SettingsScreen(
     var soundVibrateEnabled by remember { mutableStateOf(prefs.getBoolean(KEY_SOUND_VIBRATE, true)) }
     var showBatteryDialog by remember { mutableStateOf(false) }
     var showXtreamSettingsDialog by remember { mutableStateOf(false) }
-    var showDownloadedDramaDialog by remember { mutableStateOf(false) }
 
     var defaultQuality by remember { mutableStateOf(PlayerPreferences.getDefaultQuality(context)) }
     var defaultServer by remember { mutableStateOf(PlayerPreferences.getDefaultServer(context)) }
@@ -1416,28 +1437,52 @@ fun SettingsScreen(
                 )
 
                 SettingsCard {
-                    SettingsSwitchRow(
-                        title = tr(
-                            "حظر المحتوى غير اللائق والإباحي (+18)",
-                            "Block Adult Content (+18)",
-                            "+18 Yetişkin İçeriğini Engelle",
-                            "مسدودسازی محتوای بزرگسالان (+18)",
-                            "Bloquer le contenu adulte (+18)"
-                        ),
-                        subtitle = tr(
-                            "إخفاء وتصفية كافة الأفلام والمسلسلات والقنوات الإباحية والمخلة تلقائياً",
-                            "Filter and hide adult movies, series and channels automatically",
-                            "Yetişkin filmlerini, dizilerini ve kanallarını otomatik olarak gizle",
-                            "پنهان‌سازی و فیلتر خودکار فیلم‌ها، سریال‌ها و شبکه‌های نامناسب",
-                            "Masquer automatiquement les films, séries et chaînes réservés aux adultes"
-                        ),
-                        checked = adultFilterEnabled,
-                        onCheckedChange = { enabled ->
-                            adultFilterEnabled = enabled
-                            PlayerPreferences.setAdultFilterEnabled(context, enabled)
-                            com.beouttv.app.data.filter.ContentFilterEngine.isAdultFilterEnabled = enabled
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = tr(
+                                    "حظر المحتوى غير اللائق والإباحي (+18)",
+                                    "Block Adult Content (+18)",
+                                    "+18 Yetişkin İçeriğini Engelle",
+                                    "مسدودسازی محتوای بزرگسالان (+18)",
+                                    "Bloquer le contenu adulte (+18)"
+                                ),
+                                style = BeoutTextStyles.CardTitle.copy(fontWeight = FontWeight.Bold),
+                                color = BeoutColors.TextPrimary
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = tr(
+                                    "مفعل إجبارياً ودائماً لحماية العائلة - لا يمكن إلغاء تفعيله",
+                                    "Enforced permanently for family safety - cannot be disabled",
+                                    "Aile güvenliği için kalıcı olarak zorunlu",
+                                    "به‌صورت دائمی و اجباری فعال است - غیرقابل غیرفعال‌سازی",
+                                    "Activé en permanence pour la protection de la famille"
+                                ),
+                                style = BeoutTextStyles.SecondaryInfo.copy(fontSize = 12.sp),
+                                color = BeoutColors.BrightBlue
+                            )
                         }
-                    )
+                        Spacer(Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(Color(0xFF22C55E).copy(alpha = 0.15f))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = tr("مفعل إجبارياً", "Enforced", "Zorunlu", "اجباری", "Verrouillé"),
+                                color = Color(0xFF22C55E),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
             }
 
@@ -2168,64 +2213,7 @@ fun SettingsScreen(
                 }
             }
 
-            // ================= 6. DOWNLOADED SHORT DRAMAS =================
-            item {
-                SettingsSectionTitle("دراما ريلز المحملة", Icons.Rounded.DownloadDone)
-
-                val downloadedSeriesList by com.beouttv.app.data.repository.ShortDramaDownloadManager.downloadedSeriesList.collectAsState()
-                val totalDownloadedEps = downloadedSeriesList.sumOf { it.downloadedCount }
-                val totalBytes = downloadedSeriesList.sumOf { it.totalBytes }
-                val totalMb = totalBytes / (1024f * 1024f)
-                val sizeText = if (totalMb > 1024) String.format("%.2f GB", totalMb / 1024f) else String.format("%.0f MB", totalMb)
-
-                SettingsCard {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showDownloadedDramaDialog = true },
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(BeoutColors.BrightBlue.copy(alpha = 0.15f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.DownloadForOffline,
-                                    contentDescription = null,
-                                    tint = BeoutColors.BrightBlue,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            }
-                            Column {
-                                Text(
-                                    text = "مكتبة المسلسلات المحملة (أوفلاين)",
-                                    style = BeoutTextStyles.CardTitle.copy(fontWeight = FontWeight.Bold),
-                                    color = BeoutColors.TextPrimary
-                                )
-                                Spacer(Modifier.height(2.dp))
-                                Text(
-                                    text = if (downloadedSeriesList.isEmpty()) "لا توجد مسلسلات محملة حالياً (انقر للتفاصيل)"
-                                           else "${downloadedSeriesList.size} مسلسلات • $totalDownloadedEps حلقة • $sizeText",
-                                    style = BeoutTextStyles.SecondaryInfo.copy(fontSize = 11.sp),
-                                    color = if (downloadedSeriesList.isEmpty()) BeoutColors.TextSecondary else BeoutColors.BrightBlue
-                                )
-                            }
-                        }
-                        Icon(Icons.Rounded.ChevronRight, contentDescription = null, tint = BeoutColors.TextDisabled)
-                    }
-                }
-            }
-
-            // ================= 7. STORAGE & CACHE MANAGER =================
+            // ================= 6. STORAGE & CACHE MANAGER =================
             item {
                 SettingsSectionTitle(S.storage(), Icons.Rounded.Storage)
 
@@ -2431,17 +2419,6 @@ fun SettingsScreen(
 
     if (showXtreamSettingsDialog) {
         XtreamManagerDialog(onDismiss = { showXtreamSettingsDialog = false })
-    }
-
-    if (showDownloadedDramaDialog) {
-        DownloadedDramaDialog(
-            onDismiss = { showDownloadedDramaDialog = false },
-            onPlaySeries = { series, epNum ->
-                showDownloadedDramaDialog = false
-                com.beouttv.app.ui.screens.shortdrama.ShortDramaViewModel.pendingOfflineSeries = Pair(series, epNum)
-                onNavigateToShortDrama()
-            }
-        )
     }
 }
 

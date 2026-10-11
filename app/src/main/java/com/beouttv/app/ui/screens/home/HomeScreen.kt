@@ -375,7 +375,7 @@ private fun HomeContent(
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = "MovieBox",
+                                    text = "ONE+",
                                     style = BeoutTextStyles.Caption.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
                                     color = BeoutColors.BrightBlue
                                 )
@@ -442,7 +442,7 @@ private fun HomeContent(
                                         .padding(horizontal = 8.dp, vertical = 2.dp)
                                 ) {
                                     Text(
-                                        text = "MovieBox",
+                                        text = "ONE+",
                                         style = BeoutTextStyles.Caption.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
                                         color = BeoutColors.BrightBlue
                                     )
@@ -505,7 +505,7 @@ private fun HomeContent(
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = "MovieBox",
+                                    text = "ONE+",
                                     style = BeoutTextStyles.Caption.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
                                     color = BeoutColors.BrightBlue
                                 )
@@ -584,7 +584,7 @@ private fun HomeContent(
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = "MovieBox Anime",
+                                    text = "ONE+ Anime",
                                     style = BeoutTextStyles.Caption.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
                                     color = BeoutColors.BrightBlue
                                 )
@@ -729,7 +729,7 @@ private fun HomeContent(
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = "MovieBox",
+                                    text = "ONE+",
                                     style = BeoutTextStyles.Caption.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
                                     color = BeoutColors.BrightBlue
                                 )
@@ -800,7 +800,7 @@ private fun HomeContent(
                         quality = "1080p FHD",
                         duration = "115 دقيقة",
                         genre = story.genre.ifBlank { "سينما عالمية" },
-                        category = "أفلام MovieBox",
+                        category = "أفلام وان+",
                         description = "مشاهدة وتحميل ${story.title} بجودة عالية على BeoutTV.",
                         streamUrl = story.videoUrl,
                         isSeries = false

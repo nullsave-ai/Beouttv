@@ -40,7 +40,7 @@ object MovieBoxMapper {
                 servers.add(
                     StreamServer(
                         id = "mb_srv_direct_${servers.size}",
-                        name = "سيرفر MovieBox المباشر (FHD)",
+                        name = "سيرفر ONE+ المباشر (FHD)",
                         quality = "1080p FHD",
                         url = downloadUrl,
                         isDirect = true
@@ -50,7 +50,7 @@ object MovieBoxMapper {
                 servers.add(
                     StreamServer(
                         id = "mb_srv_link_${servers.size}",
-                        name = "سيرفر MovieBox (FHD)",
+                        name = "سيرفر ONE+ (FHD)",
                         quality = "1080p FHD",
                         url = resourceLink,
                         isDirect = true
@@ -66,7 +66,7 @@ object MovieBoxMapper {
                     servers.add(
                         StreamServer(
                             id = "mb_res_${res.resolution}_${servers.size}",
-                            name = "سيرفر MovieBox $qName",
+                            name = "سيرفر ONE+ $qName",
                             quality = qName,
                             url = link,
                             isDirect = true
@@ -78,7 +78,7 @@ object MovieBoxMapper {
                 capList.forEach { cap ->
                     if (cap.url.isNotBlank() && subtitles.none { it.url == cap.url }) {
                         val isAr = cap.lan.equals("ar", true) || cap.lanName.contains("عرب", true)
-                        val labelName = if (isAr) "العربية [MovieBox الأصلي]" else "${cap.lanName.ifBlank { cap.lan.uppercase() }} [MovieBox]"
+                        val labelName = if (isAr) "العربية [وان+ الأصلي]" else "${cap.lanName.ifBlank { cap.lan.uppercase() }} [ONE+]"
                         subtitles.add(
                             SubtitleTrack(
                                 id = "mb_sub_${cap.id.ifBlank { subtitles.size.toString() }}",
@@ -95,7 +95,7 @@ object MovieBoxMapper {
             detectorCaptions.forEach { cap ->
                 if (cap.url.isNotBlank() && subtitles.none { it.url == cap.url }) {
                     val isAr = cap.lan.equals("ar", true) || cap.lanName.contains("عرب", true)
-                    val labelName = if (isAr) "العربية [MovieBox الأصلي]" else "${cap.lanName.ifBlank { cap.lan.uppercase() }} [MovieBox]"
+                    val labelName = if (isAr) "العربية [وان+ الأصلي]" else "${cap.lanName.ifBlank { cap.lan.uppercase() }} [ONE+]"
                     subtitles.add(
                         SubtitleTrack(
                             id = "mb_sub_${cap.id.ifBlank { subtitles.size.toString() }}",
@@ -109,9 +109,9 @@ object MovieBoxMapper {
             }
         }
         subtitles.sortWith(
-            compareByDescending<SubtitleTrack> { it.language == "ar" && it.label.contains("MovieBox") }
+            compareByDescending<SubtitleTrack> { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
                 .thenByDescending { it.language == "ar" }
-                .thenByDescending { it.label.contains("MovieBox") }
+                .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
         )
 
         val defaultStreamUrl = servers.maxByOrNull {
@@ -130,7 +130,7 @@ object MovieBoxMapper {
             quality = servers.firstOrNull()?.quality ?: "1080p FHD",
             duration = duration,
             genre = if (genres.isNotEmpty()) genres.joinToString(" • ") else "سينما عالمية",
-            category = if (isSeries) "مسلسلات" else if (item.genre.contains("Anime", ignoreCase = true)) "أنمي" else "أفلام MovieBox",
+            category = if (isSeries) "مسلسلات" else if (item.genre.contains("Anime", ignoreCase = true)) "أنمي" else "أفلام وان+",
             genresList = genres,
             description = item.description.ifBlank { "مشاهدة وتحميل ${item.title} بجودة عالية على BeoutTV." },
             streamUrl = defaultStreamUrl,
@@ -201,7 +201,7 @@ object MovieBoxMapper {
                 servers.add(
                     StreamServer(
                         id = "mb_srv_direct_${servers.size}",
-                        name = "سيرفر MovieBox المباشر (FHD)",
+                        name = "سيرفر ONE+ المباشر (FHD)",
                         quality = "1080p FHD",
                         url = downloadUrl,
                         isDirect = true
@@ -211,7 +211,7 @@ object MovieBoxMapper {
                 servers.add(
                     StreamServer(
                         id = "mb_srv_link_${servers.size}",
-                        name = "سيرفر MovieBox (FHD)",
+                        name = "سيرفر ONE+ (FHD)",
                         quality = "1080p FHD",
                         url = resourceLink,
                         isDirect = true
@@ -229,7 +229,7 @@ object MovieBoxMapper {
                     servers.add(
                         StreamServer(
                             id = "mb_res_${res.resolution}_${servers.size}",
-                            name = "سيرفر MovieBox $qName",
+                            name = "سيرفر ONE+ $qName",
                             quality = qName,
                             url = link,
                             isDirect = true
@@ -242,7 +242,7 @@ object MovieBoxMapper {
                 capList.forEach { cap ->
                     if (cap.url.isNotBlank() && subtitles.none { it.url == cap.url }) {
                         val isAr = cap.lan.equals("ar", true) || cap.lanName.contains("عرب", true)
-                        val labelName = if (isAr) "العربية [MovieBox الأصلي]" else "${cap.lanName.ifBlank { cap.lan.uppercase() }} [MovieBox]"
+                        val labelName = if (isAr) "العربية [وان+ الأصلي]" else "${cap.lanName.ifBlank { cap.lan.uppercase() }} [ONE+]"
                         subtitles.add(
                             SubtitleTrack(
                                 id = "mb_sub_${cap.id.ifBlank { subtitles.size.toString() }}",
@@ -261,7 +261,7 @@ object MovieBoxMapper {
             detectorCaptions.forEach { cap ->
                 if (cap.url.isNotBlank() && subtitles.none { it.url == cap.url }) {
                     val isAr = cap.lan.equals("ar", true) || cap.lanName.contains("عرب", true)
-                    val labelName = if (isAr) "العربية [MovieBox الأصلي]" else "${cap.lanName.ifBlank { cap.lan.uppercase() }} [MovieBox]"
+                    val labelName = if (isAr) "العربية [وان+ الأصلي]" else "${cap.lanName.ifBlank { cap.lan.uppercase() }} [ONE+]"
                     subtitles.add(
                         SubtitleTrack(
                             id = "mb_sub_${cap.id.ifBlank { subtitles.size.toString() }}",
@@ -277,9 +277,9 @@ object MovieBoxMapper {
 
         // Always place MovieBox Arabic subtitles at the very top (#1)
         subtitles.sortWith(
-            compareByDescending<SubtitleTrack> { it.language == "ar" && it.label.contains("MovieBox") }
+            compareByDescending<SubtitleTrack> { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
                 .thenByDescending { it.language == "ar" }
-                .thenByDescending { it.label.contains("MovieBox") }
+                .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
         )
 
         // Pick highest resolution direct stream as default streamUrl (e.g. 1080p or 720p)
@@ -299,7 +299,7 @@ object MovieBoxMapper {
             quality = servers.firstOrNull()?.quality ?: "1080p FHD",
             duration = duration,
             genre = if (genres.isNotEmpty()) genres.joinToString(" • ") else "سينما عالمية",
-            category = if (isSeries) "مسلسلات" else if (detail.genre.contains("Anime", ignoreCase = true)) "أنمي" else "أفلام MovieBox",
+            category = if (isSeries) "مسلسلات" else if (detail.genre.contains("Anime", ignoreCase = true)) "أنمي" else "أفلام وان+",
             genresList = genres,
             description = detail.description.ifBlank { fallbackItem?.description.orEmpty() },
             streamUrl = defaultStreamUrl,
@@ -346,7 +346,7 @@ object MovieBoxMapper {
                 resList.flatMap { it.extCaptions ?: emptyList<MovieBoxExtCaption>() }.forEach { cap: MovieBoxExtCaption ->
                     if (cap.url.isNotBlank() && epSubtitles.none { it.url == cap.url }) {
                         val isAr = cap.lan.equals("ar", true) || cap.lanName.contains("عرب", true)
-                        val labelName = if (isAr) "العربية [MovieBox الأصلي]" else "${cap.lanName.ifBlank { cap.lan.uppercase() }} [MovieBox]"
+                        val labelName = if (isAr) "العربية [وان+ الأصلي]" else "${cap.lanName.ifBlank { cap.lan.uppercase() }} [ONE+]"
                         epSubtitles.add(
                             SubtitleTrack(
                                 id = "mb_sub_${cap.id}",

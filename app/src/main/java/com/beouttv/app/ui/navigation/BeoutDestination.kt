@@ -2,7 +2,6 @@ package com.beouttv.app.ui.navigation
 
 sealed class BeoutDestination(val route: String) {
     data object Home : BeoutDestination("home")
-    data object ShortDrama : BeoutDestination("short_drama")
     data object LiveTv : BeoutDestination("live_tv")
     data object Sports : BeoutDestination("sports")
     data object Search : BeoutDestination("search")
@@ -42,7 +41,6 @@ sealed class BeoutDestination(val route: String) {
 /** Destinations shown as bottom-nav tabs, in display order. */
 val bottomNavDestinations = listOf(
     BeoutDestination.Home,
-    BeoutDestination.ShortDrama,
     BeoutDestination.LiveTv,
     BeoutDestination.Sports,
     BeoutDestination.More

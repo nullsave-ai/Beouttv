@@ -67,7 +67,7 @@ fun BeoutNavigationDrawerContent(
                 ),
                 DrawerMenuItem(
                     route = BeoutDestination.MovieBoxMoviesCatalog.route,
-                    title = tr("أفلام MovieBox", "MovieBox Movies", "Filmler", "فیلم‌ها", "Films"),
+                    title = tr("أفلام وان+", "ONE+ Movies", "Filmler", "فیلم‌ها", "Films"),
                     subtitle = tr("مكتبة سينما بدقة FHD و 4K", "Full HD & 4K Cinema Catalog", "Full HD Sinema", "سینما کامل", "Films HD"),
                     icon = Icons.Rounded.Movie,
                     accentColor = Color(0xFF5856D6), // iOS Purple
@@ -76,7 +76,7 @@ fun BeoutNavigationDrawerContent(
                 ),
                 DrawerMenuItem(
                     route = BeoutDestination.MovieBoxSeriesCatalog.route,
-                    title = tr("مسلسلات MovieBox", "MovieBox Series", "Diziler", "سریال‌ها", "Séries"),
+                    title = tr("مسلسلات وان+", "ONE+ Series", "Diziler", "سریال‌ها", "Séries"),
                     subtitle = tr("كافة المواسم والحلقات مترجمة", "All Seasons & Episodes", "Tüm Bölümler", "فصل‌ها و قسمت‌ها", "Toutes les saisons"),
                     icon = Icons.Rounded.Tv,
                     accentColor = Color(0xFF30B0C7), // iOS Teal
@@ -131,14 +131,6 @@ fun BeoutNavigationDrawerContent(
                     subtitle = tr("جدول المباريات والترتيب والبث", "Fixtures & Live Match Streams", "Maç Takvimi", "جدول مسابقات", "Calendrier"),
                     icon = Icons.Rounded.SportsSoccer,
                     accentColor = Color(0xFF34C759) // iOS Green
-                ),
-                DrawerMenuItem(
-                    route = BeoutDestination.ShortDrama.route,
-                    title = tr("تلفزيون قصير", "Short TV", "Kısa TV", "تلویزیون کوتاه", "Short TV"),
-                    subtitle = tr("أعمال تلفزيونية قصيرة وسريعة", "Quick Binge Short Episodes", "Kısa Diziler", "سریال‌های کوتاه", "Séries courtes"),
-                    icon = Icons.Rounded.PlayCircle,
-                    accentColor = Color(0xFFFF9500),
-                    badge = "جديد"
                 )
             )
         ),

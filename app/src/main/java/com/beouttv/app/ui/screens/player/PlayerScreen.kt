@@ -363,9 +363,9 @@ fun PlayerScreen(
                 )
             }
             val sorted = list.sortedWith(
-                compareByDescending<com.beouttv.app.data.model.SubtitleTrack> { it.language == "ar" && it.label.contains("MovieBox") }
+                compareByDescending<com.beouttv.app.data.model.SubtitleTrack> { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
                     .thenByDescending { it.language == "ar" }
-                    .thenByDescending { it.label.contains("MovieBox") }
+                    .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
             )
             addAll(sorted)
         }
@@ -455,7 +455,7 @@ fun PlayerScreen(
     var selectedQualityLabel by remember { mutableStateOf("تلقائي (Auto)") }
     var selectedAudioLabel by remember { mutableStateOf("الصوت الافتراضي (عربي / أصلي)") }
     val defaultArabicSub = remember {
-        activeSubtitles.firstOrNull { it.language == "ar" && it.label.contains("MovieBox") }
+        activeSubtitles.firstOrNull { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
             ?: activeSubtitles.firstOrNull { it.language == "ar" }
             ?: activeSubtitles.firstOrNull()
     }
@@ -752,8 +752,8 @@ fun PlayerScreen(
             }
         }
 
-        // Subtitles default: If MovieBox or Arabic subtitle exists, enable Arabic text track by default!
-        val initialArabicSub = subtitles.firstOrNull { it.language == "ar" && it.label.contains("MovieBox") }
+        // Subtitles default: If ONE+ or Arabic subtitle exists, enable Arabic text track by default!
+        val initialArabicSub = subtitles.firstOrNull { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
             ?: subtitles.firstOrNull { it.language == "ar" }
             ?: subtitles.firstOrNull()
 
@@ -967,9 +967,9 @@ fun PlayerScreen(
                                 }
                                 if (fetched != null && fetched.subtitles.isNotEmpty()) {
                                     val sorted = fetched.subtitles.sortedWith(
-                                        compareByDescending<com.beouttv.app.data.model.SubtitleTrack> { it.language == "ar" && it.label.contains("MovieBox") }
+                                        compareByDescending<com.beouttv.app.data.model.SubtitleTrack> { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
                                             .thenByDescending { it.language == "ar" }
-                                            .thenByDescending { it.label.contains("MovieBox") }
+                                            .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
                                     )
                                     sorted.forEach { sub: com.beouttv.app.data.model.SubtitleTrack ->
                                         if (activeSubtitles.none { it.url == sub.url }) {
@@ -1389,9 +1389,9 @@ fun PlayerScreen(
                         if (resolvedMovie.subtitles.isNotEmpty()) {
                             withContext(Dispatchers.Main) {
                                 val sorted = resolvedMovie.subtitles.sortedWith(
-                                    compareByDescending<com.beouttv.app.data.model.SubtitleTrack> { it.language == "ar" && it.label.contains("MovieBox") }
+                                    compareByDescending<com.beouttv.app.data.model.SubtitleTrack> { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
                                         .thenByDescending { it.language == "ar" }
-                                        .thenByDescending { it.label.contains("MovieBox") }
+                                        .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
                                 )
                                 sorted.forEach { sub: com.beouttv.app.data.model.SubtitleTrack ->
                                     if (activeSubtitles.none { it.url == sub.url }) {
@@ -1653,7 +1653,7 @@ fun PlayerScreen(
 
                 // Auto-apply MovieBox / Arabic subtitle track if selected or available
                 val targetSub = selectedSubtitleTrackObj 
-                    ?: activeSubtitles.firstOrNull { it.language == "ar" && it.label.contains("MovieBox") }
+                    ?: activeSubtitles.firstOrNull { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
                     ?: activeSubtitles.firstOrNull { it.language == "ar" }
 
                 if (targetSub != null && selectedSubtitleLabel != "إيقاف الترجمة (Off)") {

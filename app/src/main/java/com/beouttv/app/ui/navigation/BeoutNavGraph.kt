@@ -283,18 +283,8 @@ fun BeoutNavGraph() {
 
         composable(BeoutDestination.Settings.route) {
             SettingsScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToShortDrama = {
-                    com.beouttv.app.ui.screens.shortdrama.ShortDramaViewModel.pendingTabSwitch.value = BeoutDestination.ShortDrama.route
-                    if (!navController.popBackStack("root_tabs", inclusive = false)) {
-                        safeNavigate(BeoutDestination.ShortDrama.route)
-                    }
-                }
+                onBack = { navController.popBackStack() }
             )
-        }
-
-        composable(BeoutDestination.ShortDrama.route) {
-            com.beouttv.app.ui.screens.shortdrama.ShortDramaScreen()
         }
 
         composable(BeoutDestination.Search.route) {
@@ -376,9 +366,9 @@ fun BeoutNavGraph() {
                 onEpisodeClick = { ep ->
                     val stream = if (ep.streamUrl.isNotBlank()) ep.streamUrl else ep.servers.firstOrNull()?.url.orEmpty()
                     val sortedSubs = ep.subtitles.sortedWith(
-                        compareByDescending<com.beouttv.app.data.model.SubtitleTrack> { it.language == "ar" && it.label.contains("MovieBox") }
+                        compareByDescending<com.beouttv.app.data.model.SubtitleTrack> { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
                             .thenByDescending { it.language == "ar" }
-                            .thenByDescending { it.label.contains("MovieBox") }
+                            .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
                     )
                     val defaultSub = sortedSubs.firstOrNull { it.language == "ar" } ?: sortedSubs.firstOrNull()
                     openPlayer(
@@ -404,9 +394,9 @@ fun BeoutNavGraph() {
                 onPlayClick = { movie ->
                     val stream = if (movie.streamUrl.isNotBlank()) movie.streamUrl else movie.servers.firstOrNull()?.url.orEmpty()
                     val sortedSubs = movie.subtitles.sortedWith(
-                        compareByDescending<com.beouttv.app.data.model.SubtitleTrack> { it.language == "ar" && it.label.contains("MovieBox") }
+                        compareByDescending<com.beouttv.app.data.model.SubtitleTrack> { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
                             .thenByDescending { it.language == "ar" }
-                            .thenByDescending { it.label.contains("MovieBox") }
+                            .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
                     )
                     val defaultSub = sortedSubs.firstOrNull { it.language == "ar" } ?: sortedSubs.firstOrNull()
                     openPlayer(
@@ -473,21 +463,6 @@ private fun RootTabsContainer(
         activeTab = BeoutDestination.Home.route
     }
 
-    LaunchedEffect(Unit) {
-        com.beouttv.app.ui.screens.shortdrama.ShortDramaViewModel.pendingTabSwitch.collect { target ->
-            if (target != null) {
-                activeTab = target
-                com.beouttv.app.ui.screens.shortdrama.ShortDramaViewModel.pendingTabSwitch.value = null
-            }
-        }
-    }
-
-    LaunchedEffect(isTvMode) {
-        if (isTvMode && activeTab == BeoutDestination.ShortDrama.route) {
-            activeTab = BeoutDestination.Home.route
-        }
-    }
-
     val currentDestination = bottomNavDestinations.find { it.route == activeTab } ?: BeoutDestination.Home
 
     val contentBlock = @Composable {
@@ -552,10 +527,6 @@ private fun RootTabsContainer(
                         )
                     }
 
-                    BeoutDestination.ShortDrama.route -> {
-                        com.beouttv.app.ui.screens.shortdrama.ShortDramaScreen()
-                    }
-
                     BeoutDestination.LiveTv.route -> {
                         LiveTvScreen(
                             onChannelClick = onOpenChannelPlayer
@@ -618,7 +589,6 @@ private fun RootTabsContainer(
     val isTablet = configuration.smallestScreenWidthDp >= 600
     val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
     // Side navigation is strictly for TV devices or real Tablets (sw600dp+).
-    // On phones (smallestScreenWidthDp < 600), flipping to landscape will NEVER hide ShortDrama / Reels!
     val useSideNavigation = isTvMode || (isTablet && isLandscape) || (isTablet && configuration.screenWidthDp >= 720)
 
     androidx.compose.material3.ModalNavigationDrawer(
@@ -631,7 +601,6 @@ private fun RootTabsContainer(
                     drawerScope.launch { drawerState.close() }
                     when (targetRoute) {
                         BeoutDestination.Home.route,
-                        BeoutDestination.ShortDrama.route,
                         BeoutDestination.LiveTv.route,
                         BeoutDestination.Sports.route,
                         BeoutDestination.More.route -> {
@@ -694,8 +663,7 @@ private fun RootTabsContainer(
                 )
             }
         } else {
-            val isDramaCleanScreen by com.beouttv.app.ui.screens.shortdrama.ShortDramaViewModel.isCleanScreenGlobal.collectAsState()
-            val showBottomBar = activeTab != BeoutDestination.ShortDrama.route || !isDramaCleanScreen
+            val showBottomBar = true
 
             Box(
                 modifier = Modifier

@@ -927,10 +927,10 @@ class RemoteMediaRepository(
     override suspend fun getCategories(): List<MediaCategory> = withContext(Dispatchers.IO) {
         if (cachedMediaCategories.isNotEmpty()) return@withContext cachedMediaCategories
         val movieBoxCategories = listOf(
-            MediaCategory(name = "أفلام MovieBox", slug = "mb_movies", isSeries = false),
-            MediaCategory(name = "أنمي MovieBox", slug = "mb_anime", isSeries = false),
+            MediaCategory(name = "أفلام وان+", slug = "mb_movies", isSeries = false),
+            MediaCategory(name = "أنمي وان+", slug = "mb_anime", isSeries = false),
             MediaCategory(name = "الأكثر رواجاً", slug = "mb_trending", isSeries = false),
-            MediaCategory(name = "مسلسلات MovieBox", slug = "mb_series", isSeries = true)
+            MediaCategory(name = "مسلسلات وان+", slug = "mb_series", isSeries = true)
         )
         try {
             val sections = client.getSections()
@@ -1316,9 +1316,9 @@ class RemoteMediaRepository(
                 }
                 finalServers = (finalServers + srvs).distinctBy { it.url }
                 finalSubs = (finalSubs + subs).distinctBy { it.url }.sortedWith(
-                    compareByDescending<SubtitleTrack> { it.language == "ar" && it.label.contains("MovieBox") }
+                    compareByDescending<SubtitleTrack> { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
                         .thenByDescending { it.language == "ar" }
-                        .thenByDescending { it.label.contains("MovieBox") }
+                        .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
                 )
                 if (finalStream.isBlank()) {
                     finalStream = client.resolveMultiSourceStream(realId = id, tmdbId = targetTmdbId, imdbId = targetImdbId, isSeries = false).ifBlank {
@@ -1515,9 +1515,9 @@ class RemoteMediaRepository(
                     imdbId = resolvedImdbId,
                     query = seriesObj.title
                 ).sortedWith(
-                    compareByDescending<SubtitleTrack> { it.language == "ar" && it.label.contains("MovieBox") }
+                    compareByDescending<SubtitleTrack> { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
                         .thenByDescending { it.language == "ar" }
-                        .thenByDescending { it.label.contains("MovieBox") }
+                        .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
                 )
 
                 // Cinemeta episodes map: key is "s_e"
@@ -1610,9 +1610,9 @@ class RemoteMediaRepository(
                             }
 
                             val epSubs = (ep.subtitles + seriesSubtitles).distinctBy { it.url }.sortedWith(
-                                compareByDescending<SubtitleTrack> { it.language == "ar" && it.label.contains("MovieBox") }
+                                compareByDescending<SubtitleTrack> { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
                                     .thenByDescending { it.language == "ar" }
-                                    .thenByDescending { it.label.contains("MovieBox") }
+                                    .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
                             )
 
                             ep.copy(

@@ -89,20 +89,11 @@ fun BeoutTvNavigationRail(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // Navigation Items: Hide Short Drama strictly in TV mode (Leanback/remote) while keeping it fully accessible on Tablets
-            val isTvMode by DeviceTypeDetector.isTvModeFlow.collectAsState()
-            val railDestinations = remember(isTvMode) {
-                if (isTvMode) {
-                    bottomNavDestinations.filter { it != BeoutDestination.ShortDrama }
-                } else {
-                    bottomNavDestinations
-                }
-            }
+            val railDestinations = bottomNavDestinations
             railDestinations.forEachIndexed { index, dest ->
                 val isSelected = dest.route == currentDestination.route
                 val icon = when (dest) {
                     BeoutDestination.Home -> Icons.Rounded.Home
-                    BeoutDestination.ShortDrama -> Icons.Rounded.PlayCircle
                     BeoutDestination.LiveTv -> Icons.Rounded.LiveTv
                     BeoutDestination.Sports -> Icons.Rounded.SportsSoccer
                     BeoutDestination.Search -> Icons.Rounded.Search
@@ -111,7 +102,6 @@ fun BeoutTvNavigationRail(
                 }
                 val label = when (dest) {
                     BeoutDestination.Home -> "الرئيسية"
-                    BeoutDestination.ShortDrama -> "تلفزيون قصير"
                     BeoutDestination.LiveTv -> "البث المباشر"
                     BeoutDestination.Sports -> "المباريات"
                     BeoutDestination.Search -> "البحث"

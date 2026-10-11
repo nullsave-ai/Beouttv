@@ -216,9 +216,9 @@ fun MovieBoxCatalogScreen(
 
     val title = when (catalogType) {
         CatalogType.ANIME -> tr("عالم الأنمي الياباني", "Anime Universe", "Anime Dünyası", "دنیای انیمه", "Univers Anime")
-        CatalogType.TRENDING -> tr("الأكثر رواجاً في MovieBox", "Top Trending", "En Çok İzlenenler", "پربازدیدترین‌ها", "Tendances")
-        CatalogType.ALL_MOVIES -> tr("أفلام MovieBox الشاملة", "MovieBox Movies", "Filmler", "فیلم‌ها", "Films")
-        CatalogType.ALL_SERIES -> tr("مسلسلات MovieBox الشاملة", "MovieBox Series", "Diziler", "سریال‌ها", "Séries")
+        CatalogType.TRENDING -> tr("الأكثر رواجاً في وان+", "ONE+ Top Trending", "En Çok İzlenenler", "پربازدیدترین‌ها", "Tendances")
+        CatalogType.ALL_MOVIES -> tr("أفلام وان+ الشاملة", "ONE+ Movies", "Filmler", "فیلم‌ها", "Films")
+        CatalogType.ALL_SERIES -> tr("مسلسلات وان+ الشاملة", "ONE+ Series", "Diziler", "سریال‌ها", "Séries")
     }
 
     val genres = remember(catalogType) {

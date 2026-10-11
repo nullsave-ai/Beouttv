@@ -28,6 +28,31 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Configure Keystore & Signing Secrets
+        run: |
+          # 1. Restore release.keystore from Secret if configured
+          if [ -n "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" ]; then
+            echo "Restoring release.keystore from GitHub Secrets..."
+            echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+          fi
+
+          # 2. Configure release.properties from Secrets if configured
+          if [ -n "${{ secrets.KEYSTORE_STORE_PASSWORD }}" ] && [ -n "${{ secrets.KEYSTORE_KEY_ALIAS }}" ]; then
+            echo "Generating release.properties from GitHub Secrets..."
+            cat <<EOF > release.properties
+          storePassword=${{ secrets.KEYSTORE_STORE_PASSWORD }}
+          keyAlias=${{ secrets.KEYSTORE_KEY_ALIAS }}
+          keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          storeFile=release.keystore
+          EOF
+          fi
+
+          # 3. Restore google-services.json if provided in Secrets
+          if [ -n "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" ]; then
+            echo "Restoring google-services.json from GitHub Secrets..."
+            echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > app/google-services.json
+          fi
+
       - name: Build Release APK
         run: |
           chmod +x ./gradlew || true
@@ -53,9 +78,11 @@ jobs:
           tag_name: v3.0.${{ github.run_number }}
           name: "BeoutTV Universal v3.0.${{ github.run_number }} (Release)"
           body: |
-            ### تطبيق BeoutTV Universal v3.0:
-            * إضافة خيار التحكم في الفلتر الأخلاقي (+18) من الإعدادات (تفعيل أو إلغاء تفعيل) للهواتف والشاشات الذكية.
-            * دعم كامل لنمط الشاشات الذكية والهواتف وتوافق شامل مع جميع المعماريات.
+            ### 🚀 تحديثات BeoutTV Universal v3.0 الجديدة:
+            * **إزالة تلفزيون قصير بالكامل**: تم استئصال ميزة المقاطع والدراما القصيرة (تلفزيون قصير / Short TV) بالكامل وحذف كافة الملفات والأكواد المرتبطة بها لتسريع التطبيق وتخفيف وزنه.
+            * **تفعيل الفلتر الأخلاقي الإجباري الدائم**: تفعيل محرك الحماية الأسرية (+18) بشكل إجباري دائم، وحذف خيار إلغاء التفعيل من الإعدادات، وإضافة فلاتر ذكية عربية وعالمية لحظر كافة الألفاظ والمحتويات الإباحية والخادشة.
+            * **إطلاق هوية ONE+ (وان+)**: استبدال كافة نصوص وعلامات موفي بوكس برمجياً بسيرفرات وترجمات وتصنيفات **ONE+** في المشغل، القائمة الجانبية، الشاشة الرئيسية، الكتالوج، وقسم التنزيلات.
+            * **توافق كلي ومثالي**: دعم شامل وموحد لأجهزة التلفاز الذكية (Android TV / Smart TV / TV Box) والهواتف لكافة المعماريات.
           files: dist/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

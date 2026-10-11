@@ -33,11 +33,6 @@ object NativeSecurity {
     const val KEY_CLOUDFLARE_ENDPOINT = 20
     const val KEY_BACKUP_PANEL_URL = 21
     const val KEY_FIREBASE_STORAGE_CONFIG_URL = 22
-    const val KEY_SHORT_DRAMA_API = 23
-    const val KEY_SHORT_DRAMA_KEY = 24
-    const val KEY_NETSHORT_CDN_API = 26
-    const val KEY_NETSHORT_WEB_EP = 27
-    const val KEY_NETSHORT_CF_CDN = 28
 
     private var isNativeLoaded = false
 

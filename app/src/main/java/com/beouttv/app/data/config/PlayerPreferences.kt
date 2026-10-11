@@ -254,15 +254,15 @@ object PlayerPreferences {
         getPrefs(context).edit().putInt(KEY_TV_MODE_PREF, pref).apply()
     }
 
-    // --- Adult Content Filter (+18) ---
+    // --- Adult Content Filter (+18) - Permanently forced active ---
     private const val KEY_ADULT_FILTER = "adult_content_filter_enabled"
 
     fun isAdultFilterEnabled(context: Context): Boolean {
-        return getPrefs(context).getBoolean(KEY_ADULT_FILTER, true)
+        return true
     }
 
     fun setAdultFilterEnabled(context: Context, enabled: Boolean) {
-        getPrefs(context).edit().putBoolean(KEY_ADULT_FILTER, enabled).apply()
-        ContentFilterEngine.isAdultFilterEnabled = enabled
+        getPrefs(context).edit().putBoolean(KEY_ADULT_FILTER, true).apply()
+        ContentFilterEngine.isAdultFilterEnabled = true
     }
 }

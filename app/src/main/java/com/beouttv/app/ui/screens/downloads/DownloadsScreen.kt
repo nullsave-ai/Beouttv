@@ -118,7 +118,7 @@ fun DownloadsScreen(
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        text = tr("يمكنك تحميل أي فيلم أو حلقة مسلسل من MovieBox لمشاهدتها في أي وقت بدون إنترنت.", "Download any movie or episode to watch offline anytime.", "İstediğiniz filmi veya diziyi indirip çevrimdışı izleyebilirsiniz.", "فیلم یا سریال مورد نظر خود را برای تماشای آفلاین دانلود کنید.", "Téléchargez des films et séries pour les regarder hors-ligne."),
+                        text = tr("يمكنك تحميل أي فيلم أو حلقة مسلسل من وان+ لمشاهدتها في أي وقت بدون إنترنت.", "Download any movie or episode from ONE+ to watch offline anytime.", "İstediğiniz filmi veya diziyi ONE+'tan indirip çevrimdışı izleyebilirsiniz.", "فیلم یا سریال مورد نظر خود را از ONE+ برای تماشای آفلاین دانلود کنید.", "Téléchargez des films et séries depuis ONE+ pour les regarder hors-ligne."),
                         style = BeoutTextStyles.Caption.copy(fontSize = 12.sp, color = BeoutColors.TextSecondary),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )

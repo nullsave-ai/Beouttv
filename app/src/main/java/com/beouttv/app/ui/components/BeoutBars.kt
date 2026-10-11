@@ -144,7 +144,6 @@ fun BeoutBottomBar(
     val haptic = LocalHapticFeedback.current
     val items = listOf(
         Triple(BeoutDestination.Home, Icons.Rounded.Home, S.home()),
-        Triple(BeoutDestination.ShortDrama, Icons.Rounded.PlayCircle, tr("تلفزيون قصير", "Short TV", "Kısa TV", "تلویزیون کوتاه", "Short TV")),
         Triple(BeoutDestination.LiveTv, Icons.Rounded.Tv, S.liveTv()),
         Triple(BeoutDestination.Sports, Icons.Rounded.SportsSoccer, tr("المباريات", "Sports", "Maçlar", "مسابقات", "Sports")),
         Triple(BeoutDestination.More, Icons.Rounded.MoreHoriz, S.more())
@@ -228,25 +227,14 @@ fun BeoutBottomBar(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        if (destination == BeoutDestination.ShortDrama) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_drama_reels),
-                                contentDescription = label,
-                                tint = itemColor,
-                                modifier = Modifier
-                                    .size(21.dp)
-                                    .scale(iconScale)
-                            )
-                        } else {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = label,
-                                tint = itemColor,
-                                modifier = Modifier
-                                    .size(21.dp)
-                                    .scale(iconScale)
-                            )
-                        }
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = label,
+                            tint = itemColor,
+                            modifier = Modifier
+                                .size(21.dp)
+                                .scale(iconScale)
+                        )
 
                         Spacer(Modifier.height(2.dp))
 

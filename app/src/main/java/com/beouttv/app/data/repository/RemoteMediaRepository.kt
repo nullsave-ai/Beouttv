@@ -767,7 +767,7 @@ class RemoteMediaRepository(
                         val cachedEnriched = com.beouttv.app.data.proto.ProtobufDiskCache.loadMovie("${item.id}_${currentLang.code}")
                             ?: com.beouttv.app.data.proto.ProtobufDiskCache.loadMovie(item.id)
                         val m = cachedEnriched?.copy(
-                            streamUrl = "https://govid.live/prem-${item.realId}.m3u8",
+                            streamUrl = if (item.realId.all { it.isDigit() }) "https://govid.live/prem-${item.realId}.m3u8" else "",
                             isFavorite = isFav
                         ) ?: Movie(
                             id = item.id,
@@ -785,7 +785,7 @@ class RemoteMediaRepository(
                             genresList = if (item.genre.isNotBlank()) item.genre.split("•", ",", "/").map { it.trim() } else listOf("أفلام"),
                             description = if (item.story.isNotBlank()) item.story else "مشاهدة وتحميل $displayTitle مترجم بجودة عالية.",
                             isFavorite = isFav,
-                            streamUrl = "https://govid.live/prem-${item.realId}.m3u8",
+                            streamUrl = if (item.realId.all { it.isDigit() }) "https://govid.live/prem-${item.realId}.m3u8" else "",
                             country = item.country,
                             director = item.director,
                             cast = item.actors,
@@ -1039,7 +1039,7 @@ class RemoteMediaRepository(
                     genresList = if (item.genre.isNotBlank()) item.genre.split("•", ",", "/").map { it.trim() } else listOf("أفلام"),
                     description = if (item.story.isNotBlank()) item.story else "مشاهدة وتحميل $displayTitle مترجم بجودة عالية.",
                     isFavorite = isFav,
-                    streamUrl = "https://govid.live/prem-${item.realId}.m3u8",
+                    streamUrl = if (item.realId.all { it.isDigit() }) "https://govid.live/prem-${item.realId}.m3u8" else "",
                     country = item.country,
                     director = item.director,
                     cast = item.actors,
@@ -1386,7 +1386,7 @@ class RemoteMediaRepository(
                     imdbRatingFormatted = if (ratingVal > 0f) "$ratingVal/10" else "",
                     genre = details.genre,
                     description = details.story.ifBlank { "مشاهدة وتحميل ${details.title} بجودة عالية." },
-                    streamUrl = "https://govid.live/prem-${details.realId}.m3u8",
+                    streamUrl = if (details.realId.all { it.isDigit() }) "https://govid.live/prem-${details.realId}.m3u8" else "",
                     originalTitle = details.title,
                     country = details.country,
                     director = details.director,
@@ -1751,7 +1751,7 @@ class RemoteMediaRepository(
                             title = epDto.title,
                             durationMinutes = 48,
                             thumbnailUrl = series.backdropUrl.ifBlank { series.posterUrl },
-                            streamUrl = epServers.firstOrNull()?.url ?: "https://govid.live/prem-${epDto.realId}.m3u8",
+                            streamUrl = epServers.firstOrNull()?.url.orEmpty(),
                             seriesId = series.id,
                             seasonNumber = sNum,
                             subtitles = seriesSubtitles,
@@ -1780,7 +1780,7 @@ class RemoteMediaRepository(
                             title = epDto.title,
                             durationMinutes = 48,
                             thumbnailUrl = series.backdropUrl.ifBlank { series.posterUrl },
-                            streamUrl = epServers.firstOrNull()?.url ?: "https://govid.live/prem-${epDto.realId}.m3u8",
+                            streamUrl = epServers.firstOrNull()?.url.orEmpty(),
                             seriesId = series.id,
                             seasonNumber = 1,
                             subtitles = seriesSubtitles,
@@ -1807,7 +1807,7 @@ class RemoteMediaRepository(
                                     title = "الحلقة 1",
                                     durationMinutes = 48,
                                     thumbnailUrl = series.posterUrl,
-                                    streamUrl = epServers.firstOrNull()?.url ?: "https://govid.live/prem-${series.id}.m3u8",
+                                    streamUrl = epServers.firstOrNull()?.url.orEmpty(),
                                     seriesId = series.id,
                                     seasonNumber = 1,
                                     subtitles = seriesSubtitles,

@@ -1406,6 +1406,16 @@ fun PlayerScreen(
                                 }
                             }
                         }
+                    } else if (mediaId.startsWith("mb_")) {
+                        // Series episode resolution from MovieBox detail
+                        val rawSubId = mediaId.removePrefix("mb_").substringBefore("_")
+                        val detail = com.beouttv.app.data.api.moviebox.MovieBoxApiClient.getSubjectDetail(rawSubId)
+                        if (detail != null) {
+                            val trailerUrl = com.beouttv.app.data.api.moviebox.MovieBoxMapper.extractTrailerVideoUrl(detail.trailer)
+                            if (!trailerUrl.isNullOrBlank() && finalUrl.isBlank()) {
+                                finalUrl = trailerUrl
+                            }
+                        }
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()

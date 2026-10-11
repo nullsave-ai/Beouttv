@@ -4,6 +4,31 @@ import com.beouttv.app.data.model.*
 
 object MovieBoxMapper {
 
+    fun extractTrailerVideoUrl(trailerElement: com.google.gson.JsonElement?): String? {
+        if (trailerElement == null || trailerElement.isJsonNull) return null
+        return try {
+            if (trailerElement.isJsonObject) {
+                val obj = trailerElement.asJsonObject
+                if (obj.has("VideoAddress")) {
+                    val va = obj.get("VideoAddress")
+                    if (va.isJsonObject) {
+                        va.asJsonObject.get("url")?.asString?.takeIf { it.isNotBlank() }
+                    } else null
+                } else if (obj.has("videoAddress")) {
+                    val va = obj.get("videoAddress")
+                    if (va.isJsonObject) {
+                        va.asJsonObject.get("url")?.asString?.takeIf { it.isNotBlank() }
+                    } else null
+                } else if (obj.has("url")) {
+                    obj.get("url")?.asString?.takeIf { it.isNotBlank() }
+                } else null
+            } else null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+
     fun extractStillsUrl(stills: com.google.gson.JsonElement?): String? {
         if (stills == null || stills.isJsonNull) return null
         if (stills.isJsonObject) {
@@ -282,6 +307,20 @@ object MovieBoxMapper {
                 .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
         )
 
+        // Fallback to high-quality trailer video address if resolutions are empty (e.g. KissKH / external hosts)
+        val trailerUrl = extractTrailerVideoUrl(detail.trailer)
+        if (servers.isEmpty() && !trailerUrl.isNullOrBlank()) {
+            servers.add(
+                StreamServer(
+                    id = "mb_trailer",
+                    name = "سيرفر العرض المباشر (H5 HD)",
+                    quality = "720p HD",
+                    url = trailerUrl,
+                    isDirect = true
+                )
+            )
+        }
+
         // Pick highest resolution direct stream as default streamUrl (e.g. 1080p or 720p)
         val defaultStreamUrl = servers.maxByOrNull {
             it.quality.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
@@ -376,7 +415,20 @@ object MovieBoxMapper {
                 )
             }
         } else {
-            // Create placeholders for the episodes so user can see and select each episode
+            // Create playable episodes fallback (using trailer / media stream if resolutions aren't indexed directly)
+            val trailerUrl = extractTrailerVideoUrl(detail.trailer)
+            val fallbackServers = if (!trailerUrl.isNullOrBlank()) {
+                listOf(
+                    StreamServer(
+                        id = "mb_ep_trailer",
+                        name = "سيرفر العرض الأصلي (HD)",
+                        quality = "720p HD",
+                        url = trailerUrl,
+                        isDirect = true
+                    )
+                )
+            } else emptyList()
+
             for (i in 1..totalEps) {
                 episodesList.add(
                     Episode(
@@ -385,10 +437,10 @@ object MovieBoxMapper {
                         title = "الحلقة $i",
                         durationMinutes = 45,
                         thumbnailUrl = backdrop,
-                        streamUrl = "",
+                        streamUrl = trailerUrl.orEmpty(),
                         seriesId = id,
                         seasonNumber = 1,
-                        servers = emptyList(),
+                        servers = fallbackServers,
                         subtitles = emptyList()
                     )
                 )

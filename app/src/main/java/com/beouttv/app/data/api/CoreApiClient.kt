@@ -481,8 +481,9 @@ class CoreApiClient(
         val cleanTmdb = tmdbId?.filter { it.isDigit() }?.ifBlank { null }
         val cleanImdb = if (!imdbId.isNullOrBlank() && imdbId.startsWith("tt")) imdbId else null
 
-        // 1. Primary Direct Server (Beout Direct Fast HLS Stream)
-        if (realId.isNotBlank()) {
+        // 1. Primary Direct Server (Beout Direct Fast HLS Stream - only for valid numerical IDs)
+        val isNumericRealId = realId.isNotBlank() && !realId.startsWith("mb_") && realId.all { it.isDigit() }
+        if (isNumericRealId) {
             servers.add(
                 com.beouttv.app.data.model.StreamServer(
                     id = "srv_direct",
@@ -557,15 +558,28 @@ class CoreApiClient(
 
         // Default safety fallback
         if (servers.isEmpty()) {
-            servers.add(
-                com.beouttv.app.data.model.StreamServer(
-                    id = "srv_default",
-                    name = "السيرفر التلقائي (Auto HLS)",
-                    quality = "1080p",
-                    url = "https://govid.live/prem-$realId.m3u8",
-                    isDirect = true
+            if (isNumericRealId) {
+                servers.add(
+                    com.beouttv.app.data.model.StreamServer(
+                        id = "srv_default",
+                        name = "السيرفر التلقائي (Auto HLS)",
+                        quality = "1080p",
+                        url = "https://govid.live/prem-$realId.m3u8",
+                        isDirect = true
+                    )
                 )
-            )
+            } else if (!cleanTmdb.isNullOrBlank()) {
+                val fbUrl = if (isSeries) "https://vidlink.pro/tv/$cleanTmdb/$seasonNumber/$episodeNumber" else "https://vidlink.pro/movie/$cleanTmdb"
+                servers.add(
+                    com.beouttv.app.data.model.StreamServer(
+                        id = "srv_vidlink_fb",
+                        name = "سيرفر VidLink Pro (4K)",
+                        quality = "1080p FHD",
+                        url = fbUrl,
+                        isDirect = false
+                    )
+                )
+            }
         }
 
         return servers
@@ -611,7 +625,11 @@ class CoreApiClient(
         }
 
         // Fallback default HLS endpoint
-        "https://govid.live/prem-$realId.m3u8"
+        if (realId.isNotBlank() && !realId.startsWith("mb_") && realId.all { it.isDigit() }) {
+            "https://govid.live/prem-$realId.m3u8"
+        } else {
+            ""
+        }
     }
 
     /**

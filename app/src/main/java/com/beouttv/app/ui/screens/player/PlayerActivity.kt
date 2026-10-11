@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import com.beouttv.app.data.config.AppGatewayManager
 import com.beouttv.app.data.config.GatewayStatus
 import com.beouttv.app.data.model.StreamServer
+import com.beouttv.app.data.model.Episode
 import com.beouttv.app.data.model.SubtitleTrack
 import com.beouttv.app.data.source.stream.LiveGatewayStreamResolver
 import com.beouttv.app.data.source.stream.OkRuStreamResolver
@@ -47,7 +48,6 @@ import com.beouttv.app.core.tv.TvRemoteController
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
 
 class PlayerActivity : ComponentActivity() {
 

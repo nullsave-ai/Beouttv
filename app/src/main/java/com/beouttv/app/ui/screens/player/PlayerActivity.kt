@@ -1,6 +1,9 @@
 package com.beouttv.app.ui.screens.player
 
 import android.app.PictureInPictureParams
+import android.content.Intent
+import org.json.JSONArray
+import org.json.JSONObject
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
@@ -261,7 +264,7 @@ class PlayerActivity : ComponentActivity() {
                         )
                     }
                 } else {
-                    var nextEpisodeState by remember { mutableStateOf(initialNextEpisode) }
+                    var nextEpisodeState by remember { mutableStateOf<com.beouttv.app.data.model.Episode?>(initialNextEpisode) }
 
                     PlayerScreen(
                         streamUrl = currentStreamUrl,

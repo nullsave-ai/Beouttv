@@ -153,6 +153,58 @@ class PlayerActivity : ComponentActivity() {
             } catch (_: Exception) {}
         }
 
+        // Parse Next Episode Object (for auto-play in Series & Anime)
+        val nextEpisodeJson = intent.getStringExtra(EXTRA_NEXT_EPISODE_JSON)
+        val initialNextEpisode: Episode? = if (!nextEpisodeJson.isNullOrBlank()) {
+            try {
+                val obj = org.json.JSONObject(nextEpisodeJson)
+                val epSubs = mutableListOf<SubtitleTrack>()
+                val sArr = obj.optJSONArray("subtitles")
+                if (sArr != null) {
+                    for (i in 0 until sArr.length()) {
+                        val sObj = sArr.getJSONObject(i)
+                        epSubs.add(
+                            SubtitleTrack(
+                                id = sObj.optString("id", "sub_$i"),
+                                language = sObj.optString("language", "ar"),
+                                label = sObj.optString("label", "العربية"),
+                                url = sObj.optString("url", ""),
+                                format = sObj.optString("format", "vtt")
+                            )
+                        )
+                    }
+                }
+                val epServers = mutableListOf<StreamServer>()
+                val srvArr = obj.optJSONArray("servers")
+                if (srvArr != null) {
+                    for (i in 0 until srvArr.length()) {
+                        val svObj = srvArr.getJSONObject(i)
+                        epServers.add(
+                            StreamServer(
+                                id = svObj.optString("id", "srv_$i"),
+                                name = svObj.optString("name", "سيرفر البث"),
+                                quality = svObj.optString("quality", "1080p"),
+                                url = svObj.optString("url", ""),
+                                isDirect = svObj.optBoolean("isDirect", true)
+                            )
+                        )
+                    }
+                }
+                Episode(
+                    id = obj.optString("id", ""),
+                    episodeNumber = obj.optInt("episodeNumber", 1),
+                    title = obj.optString("title", ""),
+                    durationMinutes = obj.optInt("durationMinutes", 45),
+                    thumbnailUrl = obj.optString("thumbnailUrl", ""),
+                    streamUrl = obj.optString("streamUrl", ""),
+                    seriesId = obj.optString("seriesId", ""),
+                    seasonNumber = obj.optInt("seasonNumber", 1),
+                    subtitles = epSubs,
+                    servers = epServers
+                )
+            } catch (_: Exception) { null }
+        } else null
+
         val resolvedInitialStream = if (streamUrl.isNotBlank()) streamUrl else serversList.firstOrNull()?.url.orEmpty()
 
         setContent {
@@ -209,6 +261,8 @@ class PlayerActivity : ComponentActivity() {
                         )
                     }
                 } else {
+                    var nextEpisodeState by remember { mutableStateOf(initialNextEpisode) }
+
                     PlayerScreen(
                         streamUrl = currentStreamUrl,
                         title = title,
@@ -231,6 +285,62 @@ class PlayerActivity : ComponentActivity() {
                         groupId = groupId,
                         isLive = isLive,
                         remoteActionFlow = remoteActionFlow,
+                        nextEpisode = nextEpisodeState,
+                        onPlayNextEpisode = { ep ->
+                            // Seamless transition to next episode
+                            val nextStream = if (ep.streamUrl.isNotBlank()) ep.streamUrl else ep.servers.firstOrNull()?.url.orEmpty()
+                            val sortedSubs = ep.subtitles.sortedWith(
+                                compareByDescending<SubtitleTrack> { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
+                                    .thenByDescending { it.language == "ar" }
+                                    .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
+                            )
+                            val defaultSub = sortedSubs.firstOrNull { it.language == "ar" } ?: sortedSubs.firstOrNull()
+                            
+                            val nextIntent = Intent(this@PlayerActivity, PlayerActivity::class.java).apply {
+                                putExtra(EXTRA_STREAM_URL, nextStream)
+                                putExtra(EXTRA_TITLE, ep.title)
+                                putExtra(EXTRA_MEDIA_ID, ep.id)
+                                putExtra(EXTRA_POSTER_URL, ep.thumbnailUrl)
+                                putExtra(EXTRA_BACKDROP_URL, backdropUrl.ifBlank { ep.thumbnailUrl })
+                                putExtra(EXTRA_IS_LIVE, false)
+                                if (!defaultSub?.url.isNullOrBlank()) {
+                                    putExtra(EXTRA_SUBTITLE_URL, defaultSub?.url)
+                                    putExtra(EXTRA_SUBTITLE_LABEL, defaultSub?.label)
+                                }
+                                if (sortedSubs.isNotEmpty()) {
+                                    val arr = JSONArray()
+                                    sortedSubs.forEach { sub ->
+                                        val obj = JSONObject().apply {
+                                            put("id", sub.id)
+                                            put("language", sub.language)
+                                            put("label", sub.label)
+                                            put("url", sub.url)
+                                            put("format", sub.format)
+                                        }
+                                        arr.put(obj)
+                                    }
+                                    putExtra(EXTRA_SUBTITLES_JSON, arr.toString())
+                                }
+                                if (ep.servers.isNotEmpty()) {
+                                    val srvArr = JSONArray()
+                                    ep.servers.forEach { srv ->
+                                        val obj = JSONObject().apply {
+                                            put("id", srv.id)
+                                            put("name", srv.name)
+                                            put("quality", srv.quality)
+                                            put("url", srv.url)
+                                            put("isDirect", srv.isDirect)
+                                        }
+                                        srvArr.put(obj)
+                                    }
+                                    putExtra(EXTRA_SERVERS_JSON, srvArr.toString())
+                                }
+                                if (!currentUserAgent.isNullOrBlank()) putExtra(EXTRA_USER_AGENT, currentUserAgent)
+                                if (!currentReferer.isNullOrBlank()) putExtra(EXTRA_REFERER, currentReferer)
+                            }
+                            finish()
+                            startActivity(nextIntent)
+                        },
                         onBack = { finish() }
                     )
                 }

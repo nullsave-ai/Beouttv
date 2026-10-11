@@ -138,6 +138,7 @@ const val EXTRA_SUBTITLES_JSON = "extra_subtitles_json"
 const val EXTRA_SERVERS_JSON = "extra_servers_json"
 const val EXTRA_IS_LIVE = "extra_is_live"
 const val EXTRA_GROUP_ID = "extra_group_id"
+const val EXTRA_NEXT_EPISODE_JSON = "extra_next_episode_json"
 
 private fun shiftSrtTimestamps(text: String, offsetMs: Long): String {
     if (offsetMs == 0L || text.isBlank()) return text
@@ -192,6 +193,8 @@ fun PlayerScreen(
     groupId: String? = null,
     isLive: Boolean = false,
     remoteActionFlow: kotlinx.coroutines.flow.SharedFlow<com.beouttv.app.core.tv.TvRemoteAction>? = null,
+    nextEpisode: com.beouttv.app.data.model.Episode? = null,
+    onPlayNextEpisode: ((com.beouttv.app.data.model.Episode) -> Unit)? = null,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -345,6 +348,9 @@ fun PlayerScreen(
     var currentPosition by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
     var isLiveStream by remember { mutableStateOf(isLive) }
+    var showNextEpisodePrompt by remember { mutableStateOf(false) }
+    var nextEpisodeCountdown by remember { mutableIntStateOf(15) }
+    var nextEpisodeDismissed by remember { mutableStateOf(false) }
 
     // Dynamic Subtitles list that updates in real time
     val activeSubtitles = remember {
@@ -1753,6 +1759,10 @@ fun PlayerScreen(
                                 backdropUrl = backdropUrl
                             )
                         }
+                        if (nextEpisode != null && onPlayNextEpisode != null) {
+                            showNextEpisodePrompt = false
+                            onPlayNextEpisode(nextEpisode)
+                        }
                     }
                     Player.STATE_IDLE -> Unit
                 }
@@ -1874,6 +1884,17 @@ fun PlayerScreen(
                         isLive = false,
                         backdropUrl = backdropUrl
                     )
+                }
+
+                if (!isLive && !isLiveStream && duration > 30000L && nextEpisode != null && !nextEpisodeDismissed) {
+                    val remainingMs = duration - currentPosition
+                    if (remainingMs in 1L..25000L) {
+                        showNextEpisodePrompt = true
+                        val secLeft = (remainingMs / 1000L).toInt().coerceIn(1, 25)
+                        nextEpisodeCountdown = secLeft
+                    } else if (remainingMs > 25000L) {
+                        showNextEpisodePrompt = false
+                    }
                 }
             }
             delay(1000)
@@ -2411,6 +2432,8 @@ fun PlayerScreen(
             PlayerControlsOverlay(
                 title = title,
                 isPlaying = if (isWebEmbed) webEmbedPlaying else isPlaying,
+                nextEpisode = nextEpisode,
+                onPlayNextEpisode = onPlayNextEpisode,
                 isLive = isLiveStream,
                 currentPosition = currentPosition,
                 duration = duration,
@@ -2889,6 +2912,127 @@ fun PlayerScreen(
         }
     }
 
+        // Floating Next Episode Overlay Card (Auto countdown and Skip to Next Episode)
+        if (showNextEpisodePrompt && nextEpisode != null && onPlayNextEpisode != null) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 32.dp, bottom = 48.dp)
+                    .zIndex(150f)
+            ) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xEE161B22)
+                    ),
+                    border = BorderStroke(1.dp, BeoutColors.BrightBlue.copy(alpha = 0.8f)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    modifier = Modifier
+                        .width(320.dp)
+                        .padding(4.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .background(BeoutColors.BrightBlue.copy(alpha = 0.2f), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.SkipNext,
+                                        contentDescription = null,
+                                        tint = BeoutColors.BrightBlue,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Text(
+                                    text = "الحلقة التالي ($nextEpisodeCountdown)",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    showNextEpisodePrompt = false
+                                    nextEpisodeDismissed = true
+                                },
+                                modifier = Modifier.size(28.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Close,
+                                    contentDescription = "إلغاء",
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = nextEpisode.title.ifBlank { "الحلقة ${nextEpisode.episodeNumber}" },
+                            color = BeoutColors.TextSecondary,
+                            fontSize = 13.sp,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+
+                        LinearProgressIndicator(
+                            progress = { ((25 - nextEpisodeCountdown).toFloat() / 25f).coerceIn(0f, 1f) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp)),
+                            color = BeoutColors.BrightBlue,
+                            trackColor = Color.White.copy(alpha = 0.15f)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    showNextEpisodePrompt = false
+                                    onPlayNextEpisode(nextEpisode)
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = BeoutColors.BrightBlue),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .tvFocusable(shape = RoundedCornerShape(8.dp))
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.PlayArrow,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                    tint = Color.White
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text(
+                                    text = "تشغيل الآن",
+                                    color = Color.White,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // In-App Smart Ad Overlay (Adsterra Direct Link inside BeoutTV without opening Chrome)
         val activeAdUrl by com.beouttv.app.data.ads.AdsterraManager.activeAdUrl.collectAsState()
         var wasPlayingBeforeAd by remember { mutableStateOf(true) }
@@ -2926,6 +3070,8 @@ private fun PlayerControlsOverlay(
     selectedServerId: String = "",
     isResolvingServers: Boolean = false,
     activeStreamUrl: String = "",
+    nextEpisode: com.beouttv.app.data.model.Episode? = null,
+    onPlayNextEpisode: ((com.beouttv.app.data.model.Episode) -> Unit)? = null,
     onSelectServer: (StreamServer) -> Unit = {},
     onBack: () -> Unit,
     onPlayPause: () -> Unit,
@@ -3314,6 +3460,15 @@ private fun PlayerControlsOverlay(
                             icon = Icons.Rounded.GridView,
                             label = if (multiViewCount > 1) "متعدد ($multiViewCount/4)" else tr("بث متعدد", "Multi-View", "Çoklu Yayın", "پخش چندگانه", "Multi-Vue"),
                             onClick = onOpenMultiView
+                        )
+                    }
+
+                    // 7. Next Episode Button (Series / Anime)
+                    if (!isLive && nextEpisode != null && onPlayNextEpisode != null) {
+                        PlayerActionButton(
+                            icon = Icons.Rounded.SkipNext,
+                            label = "الحلقة التالي",
+                            onClick = { onPlayNextEpisode(nextEpisode) }
                         )
                     }
                 }

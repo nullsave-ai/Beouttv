@@ -333,19 +333,16 @@ object AdsterraManager {
     }
 
     /**
-     * Smart Floating Popunder Trigger for Movie / Series Details & Hero Banner Details:
-     * - Triggered floatingly when opening details or entering ANY movie or series.
-     * - Dynamic smart pacing: triggers every 2nd click (counter % 2 == 1).
-     * - Minimum interval: 30 seconds cooldown between triggers to ensure non-intrusive presentation.
+     * Smart Floating Trigger for Movie / Series / Anime Details:
+     * - Triggered floatingly when opening details of ANY movie, series, or anime.
+     * - Cooldown of 15 seconds to prevent spam while ensuring high visibility.
      */
     fun onMediaDetailsOpened(context: Context): Boolean {
         val config = _configFlow.value
         if (!config.enabled || !config.socialBarEnabled) return false
 
-        topBannerDetailsClickCount++
         val now = System.currentTimeMillis()
-
-        if (now - lastTopBannerAdTimestamp >= 30000L && (topBannerDetailsClickCount % 2 == 1)) {
+        if (now - lastTopBannerAdTimestamp >= 15000L) {
             lastTopBannerAdTimestamp = now
             _showSocialBar.value = true
             return true

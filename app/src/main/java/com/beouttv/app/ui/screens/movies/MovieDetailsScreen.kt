@@ -184,6 +184,7 @@ fun MovieDetailsScreen(
 
     LaunchedEffect(movieId) {
         viewModel.load(movieId)
+        com.beouttv.app.data.ads.AdsterraManager.onMediaDetailsOpened(context)
     }
 
     Box(

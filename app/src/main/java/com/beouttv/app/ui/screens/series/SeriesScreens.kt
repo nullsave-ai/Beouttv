@@ -668,7 +668,7 @@ class SeriesDetailsViewModel(
 fun SeriesDetailsScreen(
     seriesId: String,
     onBack: () -> Unit,
-    onEpisodeClick: (Episode) -> Unit
+    onEpisodeClick: (Episode, Series?) -> Unit
 ) {
     val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<SeriesDetailsViewModel>(
         key = seriesId,
@@ -684,6 +684,7 @@ fun SeriesDetailsScreen(
 
     LaunchedEffect(seriesId) {
         viewModel.load(seriesId)
+        com.beouttv.app.data.ads.AdsterraManager.onMediaDetailsOpened(context)
     }
 
     Box(
@@ -712,7 +713,7 @@ fun SeriesDetailsScreen(
                     similarSeries = s.similarSeries,
                     isTvMode = isTvMode,
                     onBack = onBack,
-                    onEpisodeClick = onEpisodeClick,
+                    onEpisodeClick = { ep -> onEpisodeClick(ep, s.series) },
                     onToggleFavorite = viewModel::toggleFavorite,
                     onTrailerClick = { ytId ->
                         val cleanTitle = s.series.originalTitle?.ifBlank { null } ?: s.series.title

@@ -79,7 +79,8 @@ fun BeoutNavGraph() {
         drmKeyId: String? = null,
         drmKey: String? = null,
         drmLicenseUrl: String? = null,
-        groupId: String? = null
+        groupId: String? = null,
+        nextEpisode: com.beouttv.app.data.model.Episode? = null
     ) {
         val isOstora = !groupId.isNullOrBlank() ||
                 com.beouttv.app.data.source.stream.OstoraApiResolver.isOstoraUrl(streamUrl) ||
@@ -161,6 +162,47 @@ fun BeoutNavGraph() {
                     srvArr.put(obj)
                 }
                 putExtra(EXTRA_SERVERS_JSON, srvArr.toString())
+            }
+
+            // Serialize next episode if present (for TV series & Anime auto-play)
+            if (nextEpisode != null) {
+                val nextEpObj = org.json.JSONObject().apply {
+                    put("id", nextEpisode.id)
+                    put("episodeNumber", nextEpisode.episodeNumber)
+                    put("title", nextEpisode.title)
+                    put("durationMinutes", nextEpisode.durationMinutes)
+                    put("thumbnailUrl", nextEpisode.thumbnailUrl)
+                    put("streamUrl", nextEpisode.streamUrl)
+                    put("seriesId", nextEpisode.seriesId)
+                    put("seasonNumber", nextEpisode.seasonNumber)
+
+                    val nextSubsArr = org.json.JSONArray()
+                    nextEpisode.subtitles.forEach { s ->
+                        val so = org.json.JSONObject().apply {
+                            put("id", s.id)
+                            put("language", s.language)
+                            put("label", s.label)
+                            put("url", s.url)
+                            put("format", s.format)
+                        }
+                        nextSubsArr.put(so)
+                    }
+                    put("subtitles", nextSubsArr)
+
+                    val nextServersArr = org.json.JSONArray()
+                    nextEpisode.servers.forEach { sv ->
+                        val svo = org.json.JSONObject().apply {
+                            put("id", sv.id)
+                            put("name", sv.name)
+                            put("quality", sv.quality)
+                            put("url", sv.url)
+                            put("isDirect", sv.isDirect)
+                        }
+                        nextServersArr.put(svo)
+                    }
+                    put("servers", nextServersArr)
+                }
+                putExtra(EXTRA_NEXT_EPISODE_JSON, nextEpObj.toString())
             }
 
             if (!groupId.isNullOrBlank()) putExtra(EXTRA_GROUP_ID, groupId)
@@ -363,7 +405,7 @@ fun BeoutNavGraph() {
             SeriesDetailsScreen(
                 seriesId = seriesId,
                 onBack = { navController.popBackStack() },
-                onEpisodeClick = { ep ->
+                onEpisodeClick = { ep, currentSeries ->
                     val stream = if (ep.streamUrl.isNotBlank()) ep.streamUrl else ep.servers.firstOrNull()?.url.orEmpty()
                     val sortedSubs = ep.subtitles.sortedWith(
                         compareByDescending<com.beouttv.app.data.model.SubtitleTrack> { it.language == "ar" && (it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox")) }
@@ -371,6 +413,12 @@ fun BeoutNavGraph() {
                             .thenByDescending { it.label.contains("ONE+") || it.label.contains("وان+") || it.label.contains("MovieBox") }
                     )
                     val defaultSub = sortedSubs.firstOrNull { it.language == "ar" } ?: sortedSubs.firstOrNull()
+
+                    // Compute next episode in season or next season
+                    val allEpisodes = currentSeries?.seasons?.flatMap { it.episodes }.orEmpty()
+                    val currentIdx = allEpisodes.indexOfFirst { it.id == ep.id || (it.seasonNumber == ep.seasonNumber && it.episodeNumber == ep.episodeNumber) }
+                    val nextEp = if (currentIdx in 0 until allEpisodes.lastIndex) allEpisodes[currentIdx + 1] else null
+
                     openPlayer(
                         streamUrl = stream,
                         title = ep.title,
@@ -379,7 +427,8 @@ fun BeoutNavGraph() {
                         subtitleUrl = defaultSub?.url,
                         subtitleLabel = defaultSub?.label,
                         subtitles = sortedSubs,
-                        servers = ep.servers
+                        servers = ep.servers,
+                        nextEpisode = nextEp
                     )
                 }
             )

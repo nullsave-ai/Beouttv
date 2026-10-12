@@ -205,6 +205,18 @@ private fun HomeContent(
             }
         }
 
+        // Adsterra 320x50 Banner (Zone ID 31138665)
+        item(key = "home_adsterra_banner_section", contentType = "ad_banner") {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                AdsterraBanner()
+            }
+        }
+
         // 3. Live TV Channels Section
         if (state.liveChannels.isNotEmpty()) {
             item(key = "live_channels_section", contentType = "live_channels_shelf") {

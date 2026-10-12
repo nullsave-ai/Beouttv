@@ -24,7 +24,7 @@ data class AdsterraConfig(
     val streamLaunchAdEnabled: Boolean = true,
     val seeAllAdEnabled: Boolean = true,
     val bannerEnabled: Boolean = true,
-    val bannerHtml: String = "",
+    val bannerHtml: String = AdsterraManager.DEFAULT_BANNER_HTML,
     val bannerDomain: String = com.beouttv.app.data.security.NativeSecurity.getString(com.beouttv.app.data.security.NativeSecurity.KEY_FIREBASE_WEBAPP_DOMAIN),
     val socialBarEnabled: Boolean = true,
     val socialBarScriptUrl: String = com.beouttv.app.data.security.NativeSecurity.getString(com.beouttv.app.data.security.NativeSecurity.KEY_ADSTERRA_SOCIAL_BAR),
@@ -56,6 +56,21 @@ object AdsterraManager {
 
     val DEFAULT_DIRECT_LINK: String get() = com.beouttv.app.data.security.NativeSecurity.getString(com.beouttv.app.data.security.NativeSecurity.KEY_ADSTERRA_DIRECT_LINK)
     val DEFAULT_SOCIAL_BAR_SCRIPT: String get() = com.beouttv.app.data.security.NativeSecurity.getString(com.beouttv.app.data.security.NativeSecurity.KEY_ADSTERRA_SOCIAL_BAR)
+    val DEFAULT_BANNER_KEY: String get() = com.beouttv.app.data.security.NativeSecurity.getString(com.beouttv.app.data.security.NativeSecurity.KEY_ADSTERRA_BANNER_KEY)
+    val DEFAULT_BANNER_SCRIPT_URL: String get() = com.beouttv.app.data.security.NativeSecurity.getString(com.beouttv.app.data.security.NativeSecurity.KEY_ADSTERRA_BANNER_SCRIPT_URL)
+    val DEFAULT_BANNER_ZONE_ID: String get() = com.beouttv.app.data.security.NativeSecurity.getString(com.beouttv.app.data.security.NativeSecurity.KEY_ADSTERRA_BANNER_ZONE_ID)
+    val DEFAULT_BANNER_HTML: String get() = """
+        <script type="text/javascript">
+            atOptions = {
+                'key' : '$DEFAULT_BANNER_KEY',
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="$DEFAULT_BANNER_SCRIPT_URL"></script>
+    """.trimIndent()
     val REGISTERED_DOMAIN: String get() = com.beouttv.app.data.security.NativeSecurity.getString(com.beouttv.app.data.security.NativeSecurity.KEY_WEBAPP_DOMAIN)
     val REGISTERED_FIREBASE_DOMAIN: String get() = com.beouttv.app.data.security.NativeSecurity.getString(com.beouttv.app.data.security.NativeSecurity.KEY_FIREBASE_WEBAPP_DOMAIN)
 
@@ -109,7 +124,7 @@ object AdsterraManager {
         val streamEnabled = p.getBoolean(KEY_STREAM_AD, true)
         val seeAllEnabled = p.getBoolean(KEY_SEE_ALL_AD, true)
         val bannerEnabled = p.getBoolean(KEY_BANNER_AD, true)
-        val bannerHtml = p.getString(KEY_BANNER_HTML, "") ?: ""
+        val bannerHtml = p.getString(KEY_BANNER_HTML, DEFAULT_BANNER_HTML)?.ifBlank { DEFAULT_BANNER_HTML } ?: DEFAULT_BANNER_HTML
         val bannerDomain = p.getString(KEY_BANNER_DOMAIN, REGISTERED_FIREBASE_DOMAIN) ?: REGISTERED_FIREBASE_DOMAIN
         val socialBarEnabled = p.getBoolean(KEY_SOCIAL_BAR_ENABLED, true)
         val socialBarScript = p.getString(KEY_SOCIAL_BAR_SCRIPT, DEFAULT_SOCIAL_BAR_SCRIPT) ?: DEFAULT_SOCIAL_BAR_SCRIPT
@@ -173,7 +188,7 @@ object AdsterraManager {
                     val streamEnabled = json.optBoolean("streamLaunchAdEnabled", json.optBoolean("stream_ad_enabled", true))
                     val seeAllEnabled = json.optBoolean("seeAllAdEnabled", json.optBoolean("see_all_ad_enabled", true))
                     val bannerEnabled = json.optBoolean("bannerEnabled", json.optBoolean("banner_enabled", true))
-                    val bannerHtml = json.optString("bannerHtml", json.optString("banner_html", ""))
+                    val bannerHtml = json.optString("bannerHtml", json.optString("banner_html", DEFAULT_BANNER_HTML)).ifBlank { DEFAULT_BANNER_HTML }
                     val bannerDomain = json.optString("bannerDomain", json.optString("banner_domain", REGISTERED_FIREBASE_DOMAIN)).ifBlank { REGISTERED_FIREBASE_DOMAIN }
                     val socialBarEnabled = json.optBoolean("socialBarEnabled", json.optBoolean("social_bar_enabled", true))
                     val socialBarScript = json.optString("socialBarScriptUrl", json.optString("social_bar_script", DEFAULT_SOCIAL_BAR_SCRIPT)).ifBlank { DEFAULT_SOCIAL_BAR_SCRIPT }

@@ -152,7 +152,7 @@ fun AdsterraSocialBar(
                             </style>
                         </head>
                         <body>
-                            <script src="${config.socialBarScriptUrl}"></script>
+                            <script data-cfasync="false" src="${config.socialBarScriptUrl}"></script>
                         </body>
                         </html>
                     """.trimIndent()

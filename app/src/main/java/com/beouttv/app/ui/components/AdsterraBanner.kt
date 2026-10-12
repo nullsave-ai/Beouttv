@@ -59,9 +59,9 @@ fun AdsterraBanner(
     ) {
         Box(
             modifier = Modifier
-                .widthIn(max = 324.dp)
-                .height(52.dp)
-                .clip(RoundedCornerShape(8.dp))
+                .width(320.dp)
+                .height(50.dp)
+                .clip(RoundedCornerShape(6.dp))
                 .background(Color.Transparent),
             contentAlignment = Alignment.Center
         ) {

@@ -1,22 +1,16 @@
 pluginManagement {
-  repositories {
-    gradlePluginPortal()
-    google()
-    mavenCentral()
-  }
-}
-
-dependencyResolutionManagement {
-  repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
-  repositories {
-    maven {
-      url = uri(rootDir.resolve("repo"))
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
     }
-    google()
-    mavenCentral()
-  }
 }
-
-rootProject.name = "Beouttv"
-
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "BeoutTV"
 include(":app")

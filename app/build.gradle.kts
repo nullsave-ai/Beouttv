@@ -1,8 +1,19 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
+}
+
+val keystorePropsFile = rootProject.file("release.properties")
+val keystoreProps = Properties()
+val hasValidSigningProps = keystorePropsFile.exists().also { exists ->
+    if (exists) {
+        FileInputStream(keystorePropsFile).use { keystoreProps.load(it) }
+    }
 }
 
 android {
@@ -24,14 +35,8 @@ android {
         checkReleaseBuilds = false
     }
 
-    val keystorePropsFile = rootProject.file("release.properties")
-    val hasValidSigningProps = keystorePropsFile.exists()
-
     signingConfigs {
         if (hasValidSigningProps) {
-            val keystoreProps = java.util.Properties().apply {
-                keystorePropsFile.inputStream().use { load(it) }
-            }
             create("release") {
                 storeFile = rootProject.file(keystoreProps.getProperty("storeFile", "release.keystore"))
                 storePassword = keystoreProps.getProperty("storePassword")
